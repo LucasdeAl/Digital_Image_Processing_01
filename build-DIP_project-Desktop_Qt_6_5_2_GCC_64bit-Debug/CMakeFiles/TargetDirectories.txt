@@ -1,9 +1,0 @@
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/DIP_project.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/edit_cache.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/rebuild_cache.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/list_install_components.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/install.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/install/local.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/install/strip.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/DIP_project_autogen_timestamp_deps.dir
-/home/lucas/Documentos/qt_creator_pdi/Digital_Image_Processing_01/build-DIP_project-Desktop_Qt_6_5_2_GCC_64bit-Debug/CMakeFiles/DIP_project_autogen.dir
