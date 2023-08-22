@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    image.load("../DIP_project/dog.jpg");
+    image.load("../Digital_Image_Processing_01/DIP_project/dog.jpg");
     scene = new QGraphicsScene(this);
     scene->addPixmap(image);
     scene->setSceneRect(image.rect());
