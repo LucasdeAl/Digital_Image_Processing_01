@@ -1,17 +1,17 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
+    vertexBuffer.emplace_back(0, 400);
     ui->setupUi(this);
-
-    image.load("../Digital_Image_Processing_01/DIP_project/dog.jpg");
+    paint.setColor(QColor(255, 255, 255));
+    paint.setStyle(Qt::SolidPattern);
     scene = new QGraphicsScene(this);
-    scene->addPixmap(image);
-    scene->setSceneRect(image.rect());
+    scene->addRect(0, 0, 400, 400, Qt::SolidLine, paint);
+    ui->imagem->setScene(scene);
 }
 
 MainWindow::~MainWindow()
@@ -20,8 +20,5 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::on_pushButton_clicked()
-{
-    ui->imagem->setScene(scene);
-}
+
 

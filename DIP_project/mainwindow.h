@@ -3,6 +3,9 @@
 
 #include <QMainWindow>
 #include <QGraphicsScene>
+#include <QGraphicsSceneEvent>
+#include <iostream>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -14,15 +17,18 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    std::vector<QPointF> vertexBuffer;
+    QGraphicsScene *scene;
     ~MainWindow();
 
 private slots:
     void on_pushButton_clicked();
 
+    void on_pushButton_2_clicked();
+
 private:
     Ui::MainWindow *ui;
-    QGraphicsScene *scene;
-    QPixmap image;
-
+    QBrush paint;
+    QGraphicsRectItem* rect;
 };
 #endif // MAINWINDOW_H
