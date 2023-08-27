@@ -5,7 +5,6 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
-    vertexBuffer.emplace_back(0, 400);
     ui->setupUi(this);
     paint.setColor(QColor(255, 255, 255));
     paint.setStyle(Qt::SolidPattern);
