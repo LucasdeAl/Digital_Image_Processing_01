@@ -10,11 +10,10 @@
 using namespace cv;
 using namespace std;
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
-
-void scanography(Mat image)
+void scanographyRead(Mat image);
+void scanographyWrite(Mat image)
 {
     Mat newImage = image.clone();
-    double b,g,r;
     uint8_t* pixelImagePtr;
     uint8_t* pixelNewImagePtr;
     pixelImagePtr = (uint8_t*)image.data;
@@ -27,32 +26,80 @@ void scanography(Mat image)
         {
             for(int k = 0; k< cn; k++)
             {
-                pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelImagePtr[i*image.cols*cn + j*cn + k] && 0b11111110);
+                pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelImagePtr[i*image.cols*cn + j*cn + k] & 0b11111110);
             } 
         }
     }
-    string teste = "um texto qualquer";
-    bool bits[sizeof(teste)];
-    for(int i = 0; i < sizeof(teste); i++)
+    string teste = "Deus não joga dados";
+    teste.push_back('\0');
+    bool bits[8*teste.length()];
+    int k = 0;
+    for(int i = 0; i < teste.length(); i++)
     {
         for( int j = 0 ; j < 8; j++)
         {
-            bits[j] = teste[i]<<j;
+            bits[k] = (teste[i]>>j)&1;
+            k++;
         }
     }
-    // for(int i = 0; i < image.rows; i++)
-    // {
-    //     for(int j = 0; j < image.cols; j++)
-    //     {
-    //         for(int k = 0; k< cn; k++)
-    //         {
-    //             pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelImagePtr[i*image.cols*cn + j*cn + k] && 0b11111110);
-    //         } 
-    //     }
-    // }
+    int c = 0;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for(int k = 0; k< cn; k++)
+            {
+                if(c<8*teste.length())
+                {
+                    pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelNewImagePtr[i*image.cols*cn + j*cn + k] | bits[c]);
+                    c++;
+                }
+                else
+                    break;
+            } 
+        }
+    }
+  bool check = imwrite("./einsteinText.tif", newImage);
+  if (check == false) {
+    cout << "Saving the image, FAILED" << endl;
+    cin.get();  
+  }
+  cout << " Image saved successfully " << endl;
+  //Image has been saved to the desired location
+    //scanographyRead(newImage);
 
-    
-    String windowName = "Correção Linear por partes"; 
+
+    int count = 0;
+    char letter = 0;
+    string extractedText;
+
+    for (int i = 0; i < image.rows; i++) 
+    {
+        for (int j = 0; j < image.cols; j++) 
+        {
+            for (int k = 0; k < cn; k++) 
+            {
+                if (count == 8)
+                {
+                    if (letter == '\0')
+                    {
+                        goto done_extraction; // Exit the loop when null character is encountered
+                    }
+                    extractedText.push_back(letter);
+                    count = 0;
+                    letter = 0;
+                }
+                letter = letter|((pixelNewImagePtr[i * image.cols * cn + j * cn + k] & 1)<<count);
+                count++;
+            }
+        }
+    }
+
+    done_extraction:
+    cout << "Texto extraido: " << extractedText << endl;
+    cout<<"deu pau";
+
+    String windowName = "Contém texto escondido"; 
 
     namedWindow(windowName); // Create a window
 
@@ -63,6 +110,37 @@ void scanography(Mat image)
     destroyWindow(windowName); //destroy the created window
 }
 
+
+void scanographyRead(Mat image)
+{
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelNewImagePtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    int cn = image.channels();
+    int count = 0;
+    char letter;
+    string text;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for(int k = 0; k< cn; k++)
+            {
+                if(count == 8)
+                {
+                    text = text + letter;
+                    count = 0;
+                    letter = 0;
+                }
+                letter = (letter<<count)|(pixelImagePtr[i*image.cols*cn + j*cn + k] & 1);
+            } 
+        }
+    }
+
+    text = text + '\0';
+    cout<<'\n'+text+'\n';
+   
+}
 
 //not done yet
 void linear(Mat image, vector<pair<int,int >> vertices)
@@ -249,9 +327,12 @@ int main(int argc, char** argv)
 
 
 
-negative(image);
+//negative(image);
 //gammaC(image,1,1.4);
-//logarithm(image,2,1,true);
+//logarithm(image,10,1,false);
+ scanographyWrite(image);
+ Mat image2 = imread("./einsteinText.tif",IMREAD_UNCHANGED);
+ scanographyRead(image2);
 
  String windowName = "Imagem"; 
 
