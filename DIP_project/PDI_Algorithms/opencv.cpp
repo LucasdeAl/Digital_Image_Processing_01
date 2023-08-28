@@ -11,9 +11,60 @@ using namespace cv;
 using namespace std;
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
 
+void scanography(Mat image)
+{
+    Mat newImage = image.clone();
+    double b,g,r;
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelNewImagePtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelNewImagePtr = (uint8_t*)newImage.data;
+    int cn = image.channels();
+    //applying the mask
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for(int k = 0; k< cn; k++)
+            {
+                pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelImagePtr[i*image.cols*cn + j*cn + k] && 0b11111110);
+            } 
+        }
+    }
+    string teste = "um texto qualquer";
+    bool bits[sizeof(teste)];
+    for(int i = 0; i < sizeof(teste); i++)
+    {
+        for( int j = 0 ; j < 8; j++)
+        {
+            bits[j] = teste[i]<<j;
+        }
+    }
+    // for(int i = 0; i < image.rows; i++)
+    // {
+    //     for(int j = 0; j < image.cols; j++)
+    //     {
+    //         for(int k = 0; k< cn; k++)
+    //         {
+    //             pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelImagePtr[i*image.cols*cn + j*cn + k] && 0b11111110);
+    //         } 
+    //     }
+    // }
+
+    
+    String windowName = "Correção Linear por partes"; 
+
+    namedWindow(windowName); // Create a window
+
+    imshow(windowName, newImage); // Show our image inside the created window.
+
+    waitKey(0); // Wait for any keystroke in the window
+
+    destroyWindow(windowName); //destroy the created window
+}
 
 
-
+//not done yet
 void linear(Mat image, vector<pair<int,int >> vertices)
 {
     Mat newImage = image.clone();
@@ -131,9 +182,8 @@ void negative(Mat image)
     {
         for(int j = 0; j < image.cols; j++)
         {
-            pixelNegativePtr[i*negative.cols*cn + j*cn + 0] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + 0]; // B
-            pixelNegativePtr[i*negative.cols*cn + j*cn + 1] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + 1]; // G
-            pixelNegativePtr[i*negative.cols*cn + j*cn + 2] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + 2]; // R  
+            for( int k = 0 ; k < cn; k++)
+                pixelNegativePtr[i*negative.cols*cn + j*cn + k] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + k];
         }
     }
 
@@ -153,7 +203,7 @@ void negative(Mat image)
 void gammaC(Mat image,double c,double gamma)
 {
     Mat newImage = image.clone();
-    double b,g,r;
+    double b;
     uint8_t* pixelImagePtr;
     uint8_t* pixelNewImagePtr;
     pixelImagePtr = (uint8_t*)image.data;
@@ -163,13 +213,11 @@ void gammaC(Mat image,double c,double gamma)
     {
         for(int j = 0; j < image.cols; j++)
         {
-            b =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 0]/255.0); // B
-            g =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 1]/255.0); // G
-            r =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 2]/255.0); // R
-
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 0] = (uint8_t)ceil((c*pow(b,gamma))*255);
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 1] = (uint8_t)ceil((c*pow(g,gamma))*255);
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 2] = (uint8_t)ceil((c*pow(r,gamma))*255);
+            for(int k = 0 ; k < cn; k++)
+            {
+                b =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + k]/255.0); 
+                pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (uint8_t)ceil((c*pow(b,gamma))*255);
+            }
 
         }
     }
@@ -201,8 +249,8 @@ int main(int argc, char** argv)
 
 
 
-//negative(image);
-gammaC(image,1,1.4);
+negative(image);
+//gammaC(image,1,1.4);
 //logarithm(image,2,1,true);
 
  String windowName = "Imagem"; 
