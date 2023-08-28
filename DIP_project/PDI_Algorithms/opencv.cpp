@@ -56,38 +56,38 @@ void linear(Mat image, vector<pair<int,int >> vertices)
     destroyWindow(windowName); //destroy the created window
 }
 
-void logarithm(Mat image)
+void logarithm(Mat image, double base, double c, bool isNormalized)
 {
     Mat newImage = image.clone();
-    int b,g,r,bmax,gmax,rmax;
+    double b,g,r,bmax=1,gmax=1,rmax=1;
     uint8_t* pixelImagePtr;
     uint8_t* pixelNewImagePtr;
     pixelImagePtr = (uint8_t*)image.data;
     pixelNewImagePtr = (uint8_t*)newImage.data;
     int cn = image.channels();
-
-    bmax=0;
-    gmax=0;
-    rmax=0;
-
-    for(int i = 0; i < image.rows; i++)
+    
+    if(isNormalized)
     {
-        for(int j = 0; j < image.cols; j++)
+        for(int i = 0; i < image.rows; i++)
         {
-            b =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 0]/255.0); // B
-            g =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 1]/255.0); // G
-            r =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 2]/255.0); // R
-            if(bmax<b)
+            for(int j = 0; j < image.cols; j++)
             {
-                bmax = b;
-            }
-            if(gmax<g)
-            {
-                gmax = g;
-            }
-            if(rmax<r)
-            {
-                rmax = r;
+                b =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 0]/255.0); // B
+                g =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 1]/255.0); // G
+                r =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 2]/255.0); // R
+
+                if(b>bmax)
+                {
+                    bmax = b;
+                }
+                if(g>gmax)
+                {
+                    gmax = g;
+                }
+                if(r>rmax)
+                {
+                    rmax = r;
+                }
             }
         }
     }
@@ -100,9 +100,9 @@ void logarithm(Mat image)
             g =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 1]/255.0); // G
             r =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 2]/255.0); // R
 
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 0] = (uint8_t)ceil(((log(1+b)/log(2))/bmax)*255);
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 1] = (uint8_t)ceil(((log(1+g)/log(2))/gmax)*255);
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 2] = (uint8_t)ceil(((log(1+r)/log(2))/rmax)*255);
+            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 0] = (uint8_t)ceil(((log(b+1)/log(base))/bmax)*255*c);
+            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 1] = (uint8_t)ceil(((log(g+1)/log(base))/gmax)*255*c);
+            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 2] = (uint8_t)ceil(((log(r+1)/log(base))/rmax)*255*c);
 
         }
     }
@@ -201,9 +201,9 @@ int main(int argc, char** argv)
 
 
 
-negative(image);
-gammaC(image,1,1.4);
-logarithm(image);
+//negative(image);
+//gammaC(image,1,1.4);
+logarithm(image,2,1,true);
 
  String windowName = "Imagem"; 
 
