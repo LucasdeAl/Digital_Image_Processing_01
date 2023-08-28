@@ -189,7 +189,7 @@ void gammaC(Mat image,double c,double gamma)
 int main(int argc, char** argv)
 {
  // Read the image file
- Mat image = imread("./einstein.tif");
+ Mat image = imread("./einstein.tif",IMREAD_UNCHANGED);
 
  // Check for failure
  if (image.empty()) 
@@ -202,8 +202,8 @@ int main(int argc, char** argv)
 
 
 //negative(image);
-//gammaC(image,1,1.4);
-logarithm(image,2,1,true);
+gammaC(image,1,1.4);
+//logarithm(image,2,1,true);
 
  String windowName = "Imagem"; 
 
