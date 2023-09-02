@@ -300,3 +300,47 @@ void gammaC(Mat image,double c,double gamma)
 
     destroyWindow(windowName); //destroy the created window
 }
+
+std::vector<std::pair<float, float>> equacionaRetas(std::vector<std::pair<float, float>> buffer){
+    std::vector<std::pair<float, float>> equacoes;
+    for(int i = 1; i < buffer.size(); i++){
+        float a = (buffer[i].second - buffer[i-1].second)/(buffer[i].first - buffer[i-1].first);
+        float b = buffer[i].second - (a * buffer[i].first);
+        equacoes.emplace_back(a, b);
+    }
+    return equacoes;
+}
+
+void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image){
+    Mat limiar = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelLimiarPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelLimiarPtr = (uint8_t*)limiar.data;
+    int cn = image.channels();
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++)
+                for(int it = 1; it < buffer.size(); it++){
+                    int pixelIndex = i*image.cols*cn + j*cn + k;
+                    if(pixelImagePtr[pixelIndex] < round(buffer[it].first)){
+                        pixelLimiarPtr[i*limiar.cols*cn + j*cn + k] = round(abs((((float)pixelImagePtr[pixelIndex]) * equacoes[it-1].first) + equacoes[it-1].second - 255));
+                        break;
+                    }
+                }
+        }
+    }
+
+
+    String windowName = "Imagem Limiarizada";
+
+    namedWindow(windowName); // Create a window
+
+    imshow(windowName, limiar); // Show our image inside the created window.
+
+    waitKey(0); // Wait for any keystroke in the window
+
+    destroyWindow(windowName); //destroy the created window
+}

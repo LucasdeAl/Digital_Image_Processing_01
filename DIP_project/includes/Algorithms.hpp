@@ -20,3 +20,9 @@ void logarithm(Mat image, double base, double c, bool isNormalized);
 void negative(Mat image);
 
 void gammaC(Mat image,double c,double gamma);
+
+
+std::vector<std::pair<float, float>> equacionaRetas(std::vector<std::pair<float, float>> buffer);
+
+
+void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image);

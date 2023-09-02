@@ -17,7 +17,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    std::vector<QPointF> vertexBuffer;
+    std::vector<std::pair<float, float>> vertexBuffer;
     QGraphicsScene *scene;
     ~MainWindow();
 
