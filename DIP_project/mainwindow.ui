@@ -30,10 +30,10 @@
    <widget class="QGraphicsView" name="imagem">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>80</y>
-      <width>400</width>
-      <height>400</height>
+      <x>410</x>
+      <y>140</y>
+      <width>255</width>
+      <height>255</height>
      </rect>
     </property>
    </widget>

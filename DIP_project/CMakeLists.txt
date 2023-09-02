@@ -11,12 +11,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_PREFIX_PATH "/home/lucas/qtcreator-11.0.2/libexec/qtcreator/clang")
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(OpenCV REQUIRED)
+
+include_directories(includes/ ${OpenCV_INCLUDE_DIRS})
 
 set(PROJECT_SOURCES
         main.cpp
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        src/Algorithms.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -43,6 +47,7 @@ else()
 endif()
 
 target_link_libraries(DIP_project PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(DIP_project PUBLIC ${OpenCV_LIBS})
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

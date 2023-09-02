@@ -1,16 +1,5 @@
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui.hpp>
-#include <iostream>
-#include <string>
-#include <utility>
-#include <vector>
-#include <cmath>
-#include <bits/stdc++.h>
-
-using namespace cv;
-using namespace std;
+#include <Algorithms.hpp>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
-void scanographyRead(Mat image);
 void scanographyWrite(Mat image)
 {
     Mat newImage = image.clone();
@@ -310,39 +299,4 @@ void gammaC(Mat image,double c,double gamma)
     waitKey(0); // Wait for any keystroke in the window
 
     destroyWindow(windowName); //destroy the created window
-}
-
-int main(int argc, char** argv)
-{
- // Read the image file
- Mat image = imread("./einstein.tif",IMREAD_UNCHANGED);
-
- // Check for failure
- if (image.empty()) 
- {
-  cout << "Could not open or find the image" << endl;
-  cin.get(); //wait for any key press
-  return -1;
- }
-
-
-
-//negative(image);
-//gammaC(image,1,1.4);
-//logarithm(image,10,1,false);
- scanographyWrite(image);
- Mat image2 = imread("./einsteinText.tif",IMREAD_UNCHANGED);
- scanographyRead(image2);
-
- String windowName = "Imagem"; 
-
- namedWindow(windowName); // Create a window
-
- imshow(windowName, image); // Show our image inside the created window.
-
- waitKey(0); // Wait for any keystroke in the window
-
- destroyWindow(windowName); //destroy the created window
-
- return 0;
 }
