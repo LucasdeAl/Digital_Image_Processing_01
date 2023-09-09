@@ -13,7 +13,7 @@ using namespace std;
 void scanographyRead(Mat image);
 void scanographyWrite(Mat image);
 
-void linear(Mat image, vector<pair<int,int >> vertices);
+void linear(Mat image);
 
 void logarithm(Mat image, double base, double c, bool isNormalized);
 
@@ -26,3 +26,13 @@ std::vector<std::pair<float, float>> equacionaRetas(std::vector<std::pair<float,
 
 
 void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image);
+
+double converteDigito(char c);
+
+double converteString(std::string s);
+
+double parseNumber(int ini, std::string s, int *fim);
+
+std::pair<double, double> parseLog(std::string s);
+
+std::pair<double, double> parseGamma(std::string s);

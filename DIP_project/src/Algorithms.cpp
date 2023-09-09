@@ -1,4 +1,5 @@
 #include <Algorithms.hpp>
+#include <iterator>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
 void scanographyWrite(Mat image)
 {
@@ -132,7 +133,7 @@ void scanographyRead(Mat image)
 }
 
 //not done yet
-void linear(Mat image, vector<pair<int,int >> vertices)
+void linear(Mat image)
 {
     Mat newImage = image.clone();
     int matrix[image.rows][image.cols],b,g,r;
@@ -343,4 +344,126 @@ void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vec
     waitKey(0); // Wait for any keystroke in the window
 
     destroyWindow(windowName); //destroy the created window
+}
+
+double converteDigito(char c){
+    return (double)(c-'0');
+}
+
+double converteString(std::string s){
+    int indice = 0;
+    for(int i = 0; i < s.size(); i++){
+        if(s[i] == '.'){
+            indice = i;
+            break;
+        }
+        else{
+            indice = s.size() - 1;
+        }
+    }
+    if(indice == 0 && s[indice] == '.'){
+        throw "Número estranho";
+    }
+    int i = indice, j = indice; if(i != s.size() - 1) i -= 1;
+    double result = converteDigito(s[i]);
+    int cont = 1;
+    while(i >= 0 or j <= s.size() - 1){
+        i--; j++;
+        if(j < s.size()){
+            result += converteDigito(s[j]) * std::pow(10, (double)(-cont));
+        }
+        if(i >=0 ){
+            result += converteDigito(s[i]) * std::pow(10, (double)cont);
+        }
+        cont++;
+    }
+    return result;
+}
+
+double parseNumber(int ini, std::string s, int *fim){
+    int num_of_dots = 0; bool isNegative = false; double d = 0;
+    if(s[ini] == '-'){
+    	isNegative = true; ini++;
+    }
+    for(int i = ini; i < s.size(); i++){
+        if (s[i] > '9' || (s[i] < '0' && s[i] != '.')){
+            *fim = i;
+            if(isNegative){
+            	d = -converteString(s.substr(ini, i - ini).c_str());
+            }
+            else{
+            	d = converteString(s.substr(ini, i - ini).c_str());
+            }
+            return d;
+        }
+        else{
+            if(s[i] == '.'){
+                num_of_dots++;
+                if(num_of_dots > 1){
+                    throw "Número tem 2 ou mais pontos!";
+                }
+            }
+        }
+    }
+    throw "Algo não está no formato da template!";
+}
+std::pair<double, double> parseLog(std::string s){
+    double base = 0, c = 0;
+    int* p = new int(0);
+    try{
+        if(s.substr(0, 5).compare("base ") == 0){
+            base = parseNumber(5, s, p);
+            if(s.substr(*p, 4).compare(", c ") == 0){
+                c = parseNumber(*p + 4, s, p);
+                delete p;
+                std::cout << base << " - " << c << std::endl;
+                return std::pair(base, c);
+            }
+            else{
+                throw "Faltou o valor de c!";
+            }
+        }
+        else{
+            throw "Formatação errada do input, por favor seguir a template!";
+        }
+    }
+    catch(const char* err){
+        delete p;
+        std::cout << err << std::endl;
+        return std::pair(2.0, 1.0);
+    }
+    catch(std::invalid_argument e){
+        std::cout << "Não foi encontrado um número para um dos parâmetros!" << std::endl;
+            return std::pair(2.0, 1.0);
+    }
+}
+
+std::pair<double, double> parseGamma(std::string s){
+    double c = 0, gamma = 0;
+    int* p = new int(0);
+    try{
+            if(s.substr(0, 2).compare("c ") == 0){
+            c = parseNumber(2, s, p);
+            if(s.substr(*p, 8).compare(", gamma ") == 0){
+                gamma = parseNumber(*p + 8, s, p);
+                delete p;
+                return std::pair(c, gamma);
+            }
+            else{
+                throw "Faltou o valor de gamma!";
+            }
+            }
+            else{
+            throw "Formatação errada do input, por favor seguir a template!";
+            }
+    }
+    catch(const char* err){
+            delete p;
+            std::cout << err << std::endl;
+            return std::pair(1.0, 1.0);
+    }
+    catch(std::invalid_argument e){
+            std::cout << "Não foi encontrado um número para um dos parâmetros!" << std::endl;
+                return std::pair(2.0, 1.0);
+    }
 }

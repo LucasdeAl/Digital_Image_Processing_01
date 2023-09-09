@@ -18,6 +18,32 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::ToggleGraphics(int v){
+    if(v == 0){
+        ui->imagem->hide();
+    }
+    else{
+        ui->imagem->show();
+    }
+}
 
+void MainWindow::ToggleText(int v){
+    if(v == 0){
+        ui->inputTextual->hide();
+    }
+    else{
+        ui->inputTextual->show();
+    }
+}
 
+void MainWindow::setTextualPlaceholder(const char *s){
+    ui->inputTextual->setPlaceholderText(s);
+}
+
+std::string MainWindow::getText(){
+    return ui->inputTextual->toPlainText().toStdString();
+}
+void MainWindow::clearText(){
+    ui->inputTextual->setPlainText("");
+}
 
