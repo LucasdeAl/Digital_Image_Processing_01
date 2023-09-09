@@ -337,13 +337,13 @@ void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vec
 
     String windowName = "Imagem Limiarizada";
 
-    namedWindow(windowName); // Create a window
+    namedWindow(windowName);
 
-    imshow(windowName, limiar); // Show our image inside the created window.
+    imshow(windowName, limiar);
 
-    waitKey(0); // Wait for any keystroke in the window
+    waitKey(0);
 
-    destroyWindow(windowName); //destroy the created window
+    destroyWindow(windowName);
 }
 
 double converteDigito(char c){
@@ -416,7 +416,6 @@ std::pair<double, double> parseLog(std::string s){
             if(s.substr(*p, 4).compare(", c ") == 0){
                 c = parseNumber(*p + 4, s, p);
                 delete p;
-                std::cout << base << " - " << c << std::endl;
                 return std::pair(base, c);
             }
             else{

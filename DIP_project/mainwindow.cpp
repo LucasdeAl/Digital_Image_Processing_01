@@ -47,3 +47,8 @@ void MainWindow::clearText(){
     ui->inputTextual->setPlainText("");
 }
 
+void MainWindow::on_Quit_clicked()
+{
+    exit(1);
+}
+

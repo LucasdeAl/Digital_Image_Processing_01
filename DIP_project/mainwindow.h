@@ -43,6 +43,8 @@ private slots:
 
     void on_Gamma_clicked();
 
+    void on_Quit_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

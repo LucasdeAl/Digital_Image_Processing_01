@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="Set">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>190</y>
+      <x>320</x>
+      <y>250</y>
       <width>87</width>
       <height>26</height>
      </rect>
@@ -30,8 +30,8 @@
    <widget class="QGraphicsView" name="imagem">
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>140</y>
+      <x>480</x>
+      <y>200</y>
       <width>255</width>
       <height>255</height>
      </rect>
@@ -40,8 +40,8 @@
    <widget class="QPushButton" name="Clear">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>300</y>
+      <x>320</x>
+      <y>380</y>
       <width>87</width>
       <height>26</height>
      </rect>
@@ -287,11 +287,24 @@
    <widget class="QPlainTextEdit" name="inputTextual">
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>140</y>
+      <x>480</x>
+      <y>200</y>
       <width>255</width>
       <height>255</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="Quit">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>40</y>
+      <width>141</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Quit</string>
     </property>
    </widget>
   </widget>

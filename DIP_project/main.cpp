@@ -75,6 +75,10 @@ void MainWindow::on_Clear_clicked()
     case LIMIARIZACAO:
         LimpaLimiarizacao();
         break;
+    case LOGARITMO:
+        w->clearText();
+    case GAMMA:
+        w->clearText();
     }
 }
 
