@@ -1,8 +1,13 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
-void scanographyWrite(Mat image)
+cv::Mat scanographyWrite(Mat image,string p)
 {
+    if(8*p.size() - 1 > image.cols*image.rows*image.channels())
+    {
+        cout << "Texto muito longo!"<<endl;
+        return image;
+    }
     Mat newImage = image.clone();
     uint8_t* pixelImagePtr;
     uint8_t* pixelNewImagePtr;
@@ -20,15 +25,15 @@ void scanographyWrite(Mat image)
             } 
         }
     }
-    string teste = "Deus não joga dados";
-    teste.push_back('\0');
-    bool bits[8*teste.length()];
+   
+    p.push_back('\0');
+    bool bits[8*p.length()];
     int k = 0;
-    for(int i = 0; i < teste.length(); i++)
+    for(int i = 0; i < p.length(); i++)
     {
         for( int j = 0 ; j < 8; j++)
         {
-            bits[k] = (teste[i]>>j)&1;
+            bits[k] = (p[i]>>j)&1;
             k++;
         }
     }
@@ -39,7 +44,7 @@ void scanographyWrite(Mat image)
         {
             for(int k = 0; k< cn; k++)
             {
-                if(c<8*teste.length())
+                if(c<8*p.length())
                 {
                     pixelNewImagePtr[i*newImage.cols*cn + j*cn + k] = (pixelNewImagePtr[i*image.cols*cn + j*cn + k] | bits[c]);
                     c++;
@@ -49,17 +54,16 @@ void scanographyWrite(Mat image)
             } 
         }
     }
-  bool check = imwrite("../images/einsteinText.tif", newImage);
-  if (check == false) {
-    cout << "Saving the image, FAILED" << endl;
-    cin.get();  
-  }
-  cout << " Image saved successfully " << endl;
-  //Image has been saved to the desired location
-    //scanographyRead(newImage);
+   return newImage;
+}
 
 
-    int count = 0;
+string scanographyRead(Mat image)
+{
+    uint8_t* pixelImagePtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    int cn = image.channels();
+     int count = 0;
     char letter = 0;
     string extractedText;
 
@@ -79,101 +83,18 @@ void scanographyWrite(Mat image)
                     count = 0;
                     letter = 0;
                 }
-                letter = letter|((pixelNewImagePtr[i * image.cols * cn + j * cn + k] & 1)<<count);
+                letter = letter|((pixelImagePtr[i * image.cols * cn + j * cn + k] & 1)<<count);
                 count++;
             }
         }
     }
 
     done_extraction:
-    cout << "Texto extraido: " << extractedText << endl;
-    cout<<"deu pau";
-
-    String windowName = "Contém texto escondido"; 
-
-    namedWindow(windowName); // Create a window
-
-    imshow(windowName, newImage); // Show our image inside the created window.
-
-    waitKey(0); // Wait for any keystroke in the window
-
-    destroyWindow(windowName); //destroy the created window
+    //cout << "Texto extraido: " << extractedText << endl;
+    return extractedText;
 }
 
 
-void scanographyRead(Mat image)
-{
-    uint8_t* pixelImagePtr;
-    uint8_t* pixelNewImagePtr;
-    pixelImagePtr = (uint8_t*)image.data;
-    int cn = image.channels();
-    int count = 0;
-    char letter;
-    string text;
-    for(int i = 0; i < image.rows; i++)
-    {
-        for(int j = 0; j < image.cols; j++)
-        {
-            for(int k = 0; k< cn; k++)
-            {
-                if(count == 8)
-                {
-                    text = text + letter;
-                    count = 0;
-                    letter = 0;
-                }
-                letter = (letter<<count)|(pixelImagePtr[i*image.cols*cn + j*cn + k] & 1);
-            } 
-        }
-    }
-
-    text = text + '\0';
-    cout<<'\n'+text+'\n';
-   
-}
-
-//not done yet
-void linear(Mat image)
-{
-    Mat newImage = image.clone();
-    int matrix[image.rows][image.cols],b,g,r;
-    uint8_t* pixelImagePtr;
-    uint8_t* pixelNewImagePtr;
-    pixelImagePtr = (uint8_t*)image.data;
-    pixelNewImagePtr = (uint8_t*)newImage.data;
-    int cn = image.channels();
-
-    pair<int,int> zero (image.rows-1,0);
-    pair<int,int> end (0,image.cols-1);
-
-
-
-
-    for(int i = 0; i < image.rows; i++)
-    {
-        for(int j = 0; j < image.cols; j++)
-        {
-            b =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 0]/255.0); // B
-            g =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 1]/255.0); // G
-            r =  ((double)pixelImagePtr[i*image.cols*cn + j*cn + 2]/255.0); // R
-
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 0] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + 0]; // B
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 1] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + 1]; // G
-            pixelNewImagePtr[i*newImage.cols*cn + j*cn + 2] = 255 - pixelImagePtr[i*image.cols*cn + j*cn + 2]; // R  
-        }
-    }
-
-    
-    String windowName = "Correção Linear por partes"; 
-
-    namedWindow(windowName); // Create a window
-
-    imshow(windowName, newImage); // Show our image inside the created window.
-
-    waitKey(0); // Wait for any keystroke in the window
-
-    destroyWindow(windowName); //destroy the created window
-}
 
 void logarithm(Mat image, double base, double c, bool isNormalized)
 {
