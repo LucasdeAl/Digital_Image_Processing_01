@@ -1,4 +1,4 @@
-#include <Algorithms.hpp>
+#include "../includes/Algorithms.hpp"
 #include <iterator>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
 void scanographyWrite(Mat image)
@@ -49,7 +49,7 @@ void scanographyWrite(Mat image)
             } 
         }
     }
-  bool check = imwrite("./einsteinText.tif", newImage);
+  bool check = imwrite("../images/einsteinText.tif", newImage);
   if (check == false) {
     cout << "Saving the image, FAILED" << endl;
     cin.get();  
