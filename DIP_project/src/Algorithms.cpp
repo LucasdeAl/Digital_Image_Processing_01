@@ -1,6 +1,87 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
+void HistogramEqualization(Mat image)
+{
+    Mat newImage = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelNewImagePtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelNewImagePtr = (uint8_t*)newImage.data;
+    int cn = image.channels();
+    int histogram[3][256],equalizedHistogram[3][256];
+    double probability[3][256];
+    double dimensions = (double)(image.rows*image.cols);
+    double aux;
+    
+    // creating histograms for each channel
+    for(int k = 0 ; k < cn; k++)
+    {    
+        for(int i = 0; i < image.rows; i++)
+        {
+            for(int j = 0; j < image.cols; j++)
+            {
+                histogram[k][pixelImagePtr[i*image.cols*cn + j*cn + k]]++;
+            }
+        }
+    }
+
+    // calculating probabilities
+    for(int k = 0 ; k < cn; k++)
+    {    
+        for(int i = 0; i < 256; i++)
+        {
+            probability[k][i] = (double)(histogram[k][i])/dimensions;
+        }
+    }
+
+    // calculating cumulative probabilities 
+    for(int k = 0 ; k < cn; k++)
+    {   
+        aux = 0; 
+        for(int i = 0; i < 256; i++)
+        {
+            probability[k][i] += aux;
+            aux = probability[k][i];
+        }
+    }
+
+    //round cumulative probabilities multiplied by image max intensity
+    for(int k = 0 ; k < cn; k++)
+    {   
+        for(int i = 0; i < 256; i++)
+        {
+            equalizedHistogram[k][i] = ceil(probability[k][i]*255);  
+            cout << equalizedHistogram[k][i];       
+        }
+    }
+
+    // generating new image
+    for(int k = 0 ; k < cn; k++)
+    {    
+        for(int i = 0; i < image.rows; i++)
+        {
+            for(int j = 0; j < image.cols; j++)
+            {
+                pixelNewImagePtr[i*image.cols*cn + j*cn + k] = (uint8_t)equalizedHistogram[k][pixelImagePtr[i*image.cols*cn + j*cn + k]];
+            }
+        }
+    }
+    
+    String windowName = "Equlização de Histograma"; 
+
+    namedWindow(windowName); // Create a window
+
+    imshow(windowName, newImage); // Show our image inside the created window.
+
+    waitKey(0); // Wait for any keystroke in the window
+
+    destroyWindow(windowName); //destroy the created window
+}
+
+
+
+
 cv::Mat scanographyWrite(Mat image,string p)
 {
     if(8*p.size() - 1 > image.cols*image.rows*image.channels())
