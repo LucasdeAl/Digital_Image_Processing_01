@@ -352,6 +352,9 @@ double converteDigito(char c){
 
 double converteString(std::string s){
     int indice = 0;
+    if (s[indice] > '9' || s[indice] < '0'){
+        throw "Número inválido";
+    }
     for(int i = 0; i < s.size(); i++){
         if(s[i] == '.'){
             indice = i;
