@@ -1,2 +1,4 @@
 **/build
 DIP_project/CMakeLists.txt.user
+DIP_project/src/mainTest.cpp
+DIP_project/src/mainTest

@@ -10,8 +10,11 @@
 using namespace cv;
 using namespace std;
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
-void scanographyRead(Mat image);
-void scanographyWrite(Mat image);
+void HistogramEqualization(Mat image);
+
+std::string scanographyRead(Mat image);
+
+cv::Mat scanographyWrite(Mat image,string p);
 
 void linear(Mat image);
 
