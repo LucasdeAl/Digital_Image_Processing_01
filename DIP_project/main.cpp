@@ -6,9 +6,9 @@
 
 MainWindow* w;
 
-enum Algorithms{NONE, LIMIARIZACAO, LINEAR, LOGARITMO, NEGATIVO, GAMMA};
+enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA};
 enum Visibility{HIDE, SHOW};
-const char* templateAlg[] ={"", "", "", "base num, c num;", "", "c num, gamma num;"};
+const char* templateAlg[] ={"", "", "base num, c num;", "", "c num, gamma num;"};
 
 Algorithms algoritmo = NONE;
 
@@ -49,9 +49,6 @@ void MainWindow::on_Set_clicked()
         std::vector<std::pair<float, float>> eqBuffer = equacionaRetas(w->vertexBuffer);
         limiarizacaoPorPartes(w->vertexBuffer, eqBuffer, einstein);
         break;}
-    case LINEAR:
-        linear(einstein);
-        break;
     case LOGARITMO:{
         w->getText();
         read = w->getText();
@@ -98,14 +95,6 @@ void MainWindow::on_Limiarizacao_clicked()
     algoritmo = LIMIARIZACAO;
     w->ToggleText(HIDE);
     w->ToggleGraphics(SHOW);
-}
-
-void MainWindow::on_Linear_clicked()
-{
-    algoritmo = LINEAR;
-    w->ToggleGraphics(HIDE);
-    w->ToggleText(HIDE);
-
 }
 
 

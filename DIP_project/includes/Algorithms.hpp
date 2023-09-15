@@ -16,8 +16,6 @@ std::string scanographyRead(Mat image);
 
 cv::Mat scanographyWrite(Mat image,string p);
 
-void linear(Mat image);
-
 void logarithm(Mat image, double base, double c, bool isNormalized);
 
 void negative(Mat image);

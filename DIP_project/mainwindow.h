@@ -35,8 +35,6 @@ private slots:
 
     void on_Limiarizacao_clicked();
 
-    void on_Linear_clicked();
-
     void on_Logaritmo_clicked();
 
     void on_Negativo_clicked();
