@@ -80,6 +80,27 @@ void HistogramEqualization(Mat image)
 }
 
 
+std::string parseScan(std::string s){
+    try{
+        int indice = 0;
+        for(int i = 0; i < s.size(); i++){
+            if( s[i] == ';'){
+                indice = i;
+                break;
+            }
+        }
+        if(indice == 0){
+            throw "Erro: Você digitou algo?";
+        }
+        else{
+            return s.substr(0, indice);
+        }
+    }
+    catch(const char* c){
+        std::cout << c << std::endl;
+        return std::string(c);
+    }
+}
 
 
 cv::Mat scanographyWrite(Mat image,string p)
@@ -349,14 +370,14 @@ void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vec
 }
 
 double converteDigito(char c){
+    if (c > '9' || c < '0'){
+        throw "Número inválido";
+    }
     return (double)(c-'0');
 }
 
 double converteString(std::string s){
     int indice = 0;
-    if (s[indice] > '9' || s[indice] < '0'){
-        throw "Número inválido";
-    }
     for(int i = 0; i < s.size(); i++){
         if(s[i] == '.'){
             indice = i;
@@ -387,6 +408,9 @@ double converteString(std::string s){
 
 double parseNumber(int ini, std::string s, int *fim){
     int num_of_dots = 0; bool isNegative = false; double d = 0;
+    while(s[ini] == ' '){
+        ini++;
+    }
     if(s[ini] == '-'){
     	isNegative = true; ini++;
     }
@@ -470,4 +494,89 @@ std::pair<double, double> parseGamma(std::string s){
             std::cout << "Não foi encontrado um número para um dos parâmetros!" << std::endl;
                 return std::pair(2.0, 1.0);
     }
+}
+
+std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s){
+    int l = 0, c = 0, *p = new int(0);
+    std::vector<double> r;
+    try{
+        if(s.substr(0, 5).compare("tam (") == 0){
+            l = parseNumber(5, s, p);
+            if(s[*p] == ','){
+                c = parseNumber(*p + 1, s, p);
+                if(s.substr(*p, 4).compare("), [") == 0){
+                    *p = *p+3;
+                    do{
+                        r.push_back(parseNumber(*p + 1, s, p));
+                    } while(s[*p] == ',');
+                    if(s[*p] != ']') throw "Kernel disposto de forma incorreta! (Não coloque espaços antes da vírgula, só depois)";
+                    if(r.size() != l*c) throw "Número de elementos não bate com o tamanho do kernel!";
+                    delete p;
+                    return std::pair(r, std::pair(l, c));
+                }
+                else{
+                    throw "Input errado entre o tamanho e o kernel!";
+                }
+            }
+            else{
+                throw "Faltou o valor do segundo tamanho! (Não coloque espaços antes da vírgula, só depois)";
+            }
+        }
+        else{
+            throw "Formatação errada do input, por favor seguir a template!";
+        }
+    }
+    catch(const char* err){
+        delete p;
+        std::vector<double> temp;
+        std::cout << err << std::endl;
+        return std::pair(temp, std::pair(l, c));
+    }
+    catch(std::invalid_argument e){
+        std::vector<double> temp;
+        std::cout << "Não foi encontrado um número para um dos parâmetros!" << std::endl;
+        return std::pair(temp, std::pair(l, c));
+    }
+}
+
+void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    int lin = msize.first, col = msize.second;
+    int reflin = lin/2, refcol = col/2;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * kernel[l*col + c];
+                            }
+                        }
+                    }
+                }
+                pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(result * 255.0);
+            }
+        }
+    }
+
+
+    String windowName = "Imagem com kernel customizado";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
 }

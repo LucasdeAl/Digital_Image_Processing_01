@@ -10,6 +10,11 @@
     <height>600</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -89,17 +94,17 @@
      <string>Gamma</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_5">
+   <widget class="QRadioButton" name="Kernel">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>160</y>
-      <width>110</width>
+      <width>121</width>
       <height>24</height>
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Generic Kernel</string>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioButton_6">
@@ -294,7 +299,7 @@
      <string>Quit</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton">
+   <widget class="QRadioButton" name="Escanografia">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -304,7 +309,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Escanografia</string>
     </property>
    </widget>
   </widget>
@@ -314,7 +319,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

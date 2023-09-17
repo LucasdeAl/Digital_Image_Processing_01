@@ -6,13 +6,22 @@
 
 MainWindow* w;
 
-enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA};
+enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL};
 enum Visibility{HIDE, SHOW};
-const char* templateAlg[] ={"", "", "base num, c num;", "", "c num, gamma num;"};
+const char* templateAlg[] ={"",
+    "",
+    "TEMPLATE: base num, c num;\n\nCLEAR - LIMPA TEXTO",
+    "",
+    "TEMPLATE: c num, gamma num;\n\nCLEAR - LIMPA TEXTO",
+    "TEMPLATE: msg;\n\nSET - ESCREVE NA IMAGEM\n\nCLEAR - LIMPA O BLOCO DE TEXTO E LÊ DA IMAGEM",
+    "TEMPLATE: tam (lin, col), [l1c1, l1c2, ... l1cn, l2c1, ... lmcn]\n\nSET - APLICA KERNEL NA IMAGEM"};
 
 Algorithms algoritmo = NONE;
 
 std::vector<std::pair<float, float>> equacionaRetas(std::vector<QPointF> buffer);
+
+Mat reference = Mat(cv::Size(1,1), 0);
+Mat scanimg = Mat(cv::Size(1,1), 0);
 
 void LimpaLimiarizacao(){
     w->vertexBuffer.clear();
@@ -50,7 +59,6 @@ void MainWindow::on_Set_clicked()
         limiarizacaoPorPartes(w->vertexBuffer, eqBuffer, einstein);
         break;}
     case LOGARITMO:{
-        w->getText();
         read = w->getText();
         auto dataLog = parseLog(read);
         logarithm(einstein, dataLog.first, dataLog.second, true);
@@ -63,6 +71,19 @@ void MainWindow::on_Set_clicked()
         auto dataGamma = parseGamma(read);
         gammaC(einstein, dataGamma.first, dataGamma.second);
         break;}
+    case ESCANOGRAFIA:{
+        read = w->getText();
+        auto dataScanography = parseScan(read);
+        scanimg = scanographyWrite(einstein, dataScanography);
+        break;
+    }
+    case KERNEL:{
+        read = w->getText();
+        auto dataKernel = parseKernel(read);
+        auto matsize = dataKernel.second;
+        appKernel(einstein, dataKernel.first, matsize);
+        break;
+    }
     }
 }
 
@@ -74,8 +95,25 @@ void MainWindow::on_Clear_clicked()
         break;
     case LOGARITMO:
         w->clearText();
+        break;
     case GAMMA:
         w->clearText();
+        break;
+    case ESCANOGRAFIA:{
+        if(scanimg.size() != cv::Size(1, 1)){
+            w->clearText();
+            std::string aux = std::string("Mensagem Lida: ") + scanographyRead(scanimg);
+            const char *c = aux.c_str();
+            w->setTextualPlaceholder(c);
+        }
+        else{
+            std::cout << "Erro: Não existe imagem com mensagem secreta... ainda." << std::endl;
+        }
+        break;
+    }
+    case KERNEL:
+        w->clearText();
+        break;
     }
 }
 
@@ -121,6 +159,24 @@ void MainWindow::on_Gamma_clicked()
     algoritmo = GAMMA;
     w->ToggleGraphics(HIDE);
     w->setTextualPlaceholder(templateAlg[GAMMA]);
+    w->clearText();
+    w->ToggleText(SHOW);
+}
+
+void MainWindow::on_Escanografia_clicked()
+{
+    algoritmo = ESCANOGRAFIA;
+    w->ToggleGraphics(HIDE);
+    w->setTextualPlaceholder(templateAlg[ESCANOGRAFIA]);
+    w->clearText();
+    w->ToggleText(SHOW);
+}
+
+void MainWindow::on_Kernel_clicked()
+{
+    algoritmo = KERNEL;
+    w->ToggleGraphics(HIDE);
+    w->setTextualPlaceholder(templateAlg[KERNEL]);
     w->clearText();
     w->ToggleText(SHOW);
 }

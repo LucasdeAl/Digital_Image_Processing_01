@@ -43,6 +43,10 @@ private slots:
 
     void on_Quit_clicked();
 
+    void on_Escanografia_clicked();
+
+    void on_Kernel_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
