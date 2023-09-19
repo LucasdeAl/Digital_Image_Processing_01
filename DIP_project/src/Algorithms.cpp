@@ -1,6 +1,6 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
-//g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
+//g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
 bool saveImage(const std::string& filename, const cv::Mat& image) 
 {
     if (image.empty()) 
@@ -20,7 +20,32 @@ bool saveImage(const std::string& filename, const cv::Mat& image)
     return success;
 }
 
-void HistogramEqualization(Mat image)
+void showHistogram(Mat image)
+{
+    int histSize = 256; // Number of bins
+    float range[] = {0, 256}; // Pixel value range
+    const float* histRange = {range};
+    cv::Mat histogram;
+
+    cv::calcHist(&image, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
+
+    // Step 3: Plot the histogram using OpenCV's imshow
+    cv::namedWindow("Histogram", cv::WINDOW_NORMAL);
+    cv::normalize(histogram, histogram, 0, image.rows, cv::NORM_MINMAX);
+    cv::Mat hist_image = cv::Mat::ones(400, 600, CV_8UC3) * 255;
+
+    for (int i = 0; i < histSize; i++) {
+        cv::line(hist_image, cv::Point(i, 400), cv::Point(i, 400 - cvRound(histogram.at<float>(i))), cv::Scalar(0, 0, 0), 2, 8, 0);
+    }
+
+    cv::imshow("Histogram", hist_image);
+
+    // Step 4: Wait for a key press and exit
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+ 
+}//*/
+Mat HistogramEqualization(Mat image)
 {
     Mat newImage = image.clone();
     uint8_t* pixelImagePtr;
@@ -32,7 +57,14 @@ void HistogramEqualization(Mat image)
     double probability[3][256];
     double dimensions = (double)(image.rows*image.cols);
     double aux;
-    
+    // initiation of histogram
+    for(int k = 0 ; k < cn; k++)
+    {    
+        for(int i = 0; i < 256; i++)
+        {  
+            histogram[k][i] = 0;
+        }
+    }
     // creating histograms for each channel
     for(int k = 0 ; k < cn; k++)
     {    
@@ -44,12 +76,12 @@ void HistogramEqualization(Mat image)
             }
         }
     }
-
+    
     // calculating probabilities
     for(int k = 0 ; k < cn; k++)
     {    
         for(int i = 0; i < 256; i++)
-        {
+        {  
             probability[k][i] = (double)(histogram[k][i])/dimensions;
         }
     }
@@ -64,7 +96,6 @@ void HistogramEqualization(Mat image)
             aux = probability[k][i];
         }
     }
-
     //round cumulative probabilities multiplied by image max intensity
     for(int k = 0 ; k < cn; k++)
     {   
@@ -86,7 +117,7 @@ void HistogramEqualization(Mat image)
             }
         }
     }
-    
+
     String windowName = "Equlização de Histograma"; 
 
     namedWindow(windowName); // Create a window
@@ -96,6 +127,8 @@ void HistogramEqualization(Mat image)
     waitKey(0); // Wait for any keystroke in the window
 
     destroyWindow(windowName); //destroy the created window
+    
+    return newImage;
 }
 
 

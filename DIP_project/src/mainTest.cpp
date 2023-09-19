@@ -11,11 +11,12 @@
 using namespace cv;
 using namespace std;
 
+
 int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/einstein.tif",
+    Mat image = imread("../images/polen.tif",
                        IMREAD_GRAYSCALE);
   
     // Error Handling
@@ -30,8 +31,10 @@ int main(int argc, char** argv)
   
     // Show Image inside a window with
     // the name provided
+
     imshow("Window Name", image);
-  
+    Mat equalized = HistogramEqualization(image);
+    showHistogram(equalized);
     // Wait for any keystroke
     waitKey(0);
     return 0;

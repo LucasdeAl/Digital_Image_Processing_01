@@ -1,5 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
+#include "opencv2/imgcodecs.hpp"
+#include "opencv2/imgproc.hpp"
 #include <iostream>
 #include <string>
 #include <utility>
@@ -12,7 +14,7 @@ using namespace std;
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
 bool saveImage(const std::string& filename, const cv::Mat& image); 
 
-void HistogramEqualization(Mat image);
+cv::Mat HistogramEqualization(Mat image);
 
 std::string scanographyRead(Mat image);
 
