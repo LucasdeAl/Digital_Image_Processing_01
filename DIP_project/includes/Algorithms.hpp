@@ -10,9 +10,9 @@
 using namespace cv;
 using namespace std;
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
-void HistogramEqualization(Mat image);
+bool saveImage(const std::string& filename, const cv::Mat& image); 
 
-std::string parseScan(std::string s);
+void HistogramEqualization(Mat image);
 
 std::string scanographyRead(Mat image);
 
@@ -39,7 +39,3 @@ double parseNumber(int ini, std::string s, int *fim);
 std::pair<double, double> parseLog(std::string s);
 
 std::pair<double, double> parseGamma(std::string s);
-
-std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s);
-
-void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize);

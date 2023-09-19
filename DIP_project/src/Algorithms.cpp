@@ -1,6 +1,25 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
+bool saveImage(const std::string& filename, const cv::Mat& image) 
+{
+    if (image.empty()) 
+    {
+        std::cerr << "Error: Input image is empty" << std::endl;
+        return false;
+    }
+    bool success = cv::imwrite(filename, image);
+    if (success) 
+    {
+        std::cout << "Image saved successfully as " << filename << std::endl;
+    } else 
+    {
+        std::cerr << "Error: Could not save the image as " << filename << std::endl;
+    }
+
+    return success;
+}
+
 void HistogramEqualization(Mat image)
 {
     Mat newImage = image.clone();
