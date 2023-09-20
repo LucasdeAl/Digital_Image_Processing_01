@@ -11,8 +11,11 @@
 
 using namespace cv;
 using namespace std;
-//g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs
-bool saveImage(const std::string& filename, const cv::Mat& image); 
+//g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs 
+
+bool saveImage(const std::string& path, const cv::Mat& image);
+
+int showHistogram(string path);
 
 cv::Mat HistogramEqualization(Mat image);
 

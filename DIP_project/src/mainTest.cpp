@@ -32,9 +32,10 @@ int main(int argc, char** argv)
     // Show Image inside a window with
     // the name provided
 
-    imshow("Window Name", image);
+    //imshow("Window Name", image);
     Mat equalized = HistogramEqualization(image);
-    showHistogram(equalized);
+    saveImage("../images/polenEqualized.tif",equalized);
+    showHistogram("../images/polenEqualized.tif");
     // Wait for any keystroke
     waitKey(0);
     return 0;

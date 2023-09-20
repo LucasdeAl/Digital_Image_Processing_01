@@ -1,50 +1,68 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
-bool saveImage(const std::string& filename, const cv::Mat& image) 
+bool saveImage(const std::string& path, const cv::Mat& image) 
 {
     if (image.empty()) 
     {
-        std::cerr << "Error: Input image is empty" << std::endl;
+        std::cerr << "Error: Input image is empty." << std::endl;
         return false;
     }
-    bool success = cv::imwrite(filename, image);
+
+    bool success = cv::imwrite(path, image);
+
     if (success) 
     {
-        std::cout << "Image saved successfully as " << filename << std::endl;
+        std::cout << "Image saved successfully to " << path << std::endl;
     } else 
     {
-        std::cerr << "Error: Could not save the image as " << filename << std::endl;
+        std::cerr << "Error: Unable to save image to " << path << std::endl;
     }
 
     return success;
 }
 
-void showHistogram(Mat image)
+int showHistogram(string path)
 {
-    int histSize = 256; // Number of bins
-    float range[] = {0, 256}; // Pixel value range
-    const float* histRange = {range};
-    cv::Mat histogram;
-
-    cv::calcHist(&image, 1, 0, cv::Mat(), histogram, 1, &histSize, &histRange);
-
-    // Step 3: Plot the histogram using OpenCV's imshow
-    cv::namedWindow("Histogram", cv::WINDOW_NORMAL);
-    cv::normalize(histogram, histogram, 0, image.rows, cv::NORM_MINMAX);
-    cv::Mat hist_image = cv::Mat::ones(400, 600, CV_8UC3) * 255;
-
-    for (int i = 0; i < histSize; i++) {
-        cv::line(hist_image, cv::Point(i, 400), cv::Point(i, 400 - cvRound(histogram.at<float>(i))), cv::Scalar(0, 0, 0), 2, 8, 0);
+    Mat src = imread(path);
+    if( src.empty() )
+    {
+    return EXIT_FAILURE;
     }
+        vector<Mat> bgr_planes;
+    split( src, bgr_planes );
+    int histSize = 256;
+    float range[] = { 0, 256 }; //the upper boundary is exclusive
+    const float* histRange[] = { range };
+    bool uniform = true, accumulate = false;
+    Mat b_hist, g_hist, r_hist;
+    calcHist( &bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, histRange, uniform, accumulate );
+    calcHist( &bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, histRange, uniform, accumulate );
+    calcHist( &bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, histRange, uniform, accumulate );
+    int hist_w = 512, hist_h = 400;
+    int bin_w = cvRound( (double) hist_w/histSize );
+    Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+    normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+    normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+    for( int i = 1; i < histSize; i++ )
+    {
+    line( histImage, Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ),
+    Point( bin_w*(i), hist_h - cvRound(b_hist.at<float>(i)) ),
+    Scalar( 255, 0, 0), 2, 8, 0 );
+    line( histImage, Point( bin_w*(i-1), hist_h - cvRound(g_hist.at<float>(i-1)) ),
+    Point( bin_w*(i), hist_h - cvRound(g_hist.at<float>(i)) ),
+    Scalar( 0, 255, 0), 2, 8, 0 );
+    line( histImage, Point( bin_w*(i-1), hist_h - cvRound(r_hist.at<float>(i-1)) ),
+    Point( bin_w*(i), hist_h - cvRound(r_hist.at<float>(i)) ),
+    Scalar( 0, 0, 255), 2, 8, 0 );
+    }
+    imshow("Source image", src );
+    imshow("calcHist Demo", histImage );
+    waitKey();
+    return EXIT_SUCCESS;
+}
 
-    cv::imshow("Histogram", hist_image);
-
-    // Step 4: Wait for a key press and exit
-    cv::waitKey(0);
-    cv::destroyAllWindows();
- 
-}//*/
 Mat HistogramEqualization(Mat image)
 {
     Mat newImage = image.clone();
@@ -102,7 +120,7 @@ Mat HistogramEqualization(Mat image)
         for(int i = 0; i < 256; i++)
         {
             equalizedHistogram[k][i] = ceil(probability[k][i]*255);  
-            cout << equalizedHistogram[k][i];       
+            //cout << equalizedHistogram[k][i];       
         }
     }
 
@@ -116,18 +134,7 @@ Mat HistogramEqualization(Mat image)
                 pixelNewImagePtr[i*image.cols*cn + j*cn + k] = (uint8_t)equalizedHistogram[k][pixelImagePtr[i*image.cols*cn + j*cn + k]];
             }
         }
-    }
-
-    String windowName = "Equlização de Histograma"; 
-
-    namedWindow(windowName); // Create a window
-
-    imshow(windowName, newImage); // Show our image inside the created window.
-
-    waitKey(0); // Wait for any keystroke in the window
-
-    destroyWindow(windowName); //destroy the created window
-    
+    }    
     return newImage;
 }
 
