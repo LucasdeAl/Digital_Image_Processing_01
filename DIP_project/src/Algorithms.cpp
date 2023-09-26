@@ -1,5 +1,6 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
+#include <stdlib.h>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
 bool saveImage(const std::string& path, const cv::Mat& image) 
 {
@@ -630,6 +631,55 @@ void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize)
 
 
     String windowName = "Imagem com kernel customizado";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+
+void appKernelMedian(Mat image, std::pair<int, int> msize){
+    std::vector<double> kernel;
+    int tam = msize.first*msize.second;
+    kernel.assign(tam,1);
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    int lin = msize.first, col = msize.second;
+    int reflin = lin/2, refcol = col/2;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                std::vector<double> array;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                array.push_back((pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * kernel[l*col + c]);
+                            }
+                        }
+                    }
+                }
+                std::sort(array.begin(), array.end(), std::greater<double>());
+                for(int m=0;m < tam/2;m++)
+                    array.pop_back();
+                pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(array.back() * 255.0);
+            }
+        }
+    }
+
+
+    String windowName = "Imagem com filtro da mediana aplicado";
 
     namedWindow(windowName);
 

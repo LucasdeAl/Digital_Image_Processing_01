@@ -16,8 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/polen.tif",
-                       IMREAD_GRAYSCALE);
+    Mat image = imread("../images/placa.tif");
   
     // Error Handling
     if (image.empty()) {
@@ -25,17 +24,22 @@ int main(int argc, char** argv)
              << "Not Found" << endl;
   
         // wait for any key press
-        cin.get();
+        cin.get();  
         return -1;
     }
   
+    appKernelMedian(image,{3,3});
     // Show Image inside a window with
     // the name provided
-
+    //Mat textImage = scanographyWrite(image,"escrever qualquer coisa para testar a escanografia no RGB");
+    //string p = scanographyRead(textImage);
+    //cout << p <<endl;
     //imshow("Window Name", image);
-    Mat equalized = HistogramEqualization(image);
-    saveImage("../images/polenEqualized.tif",equalized);
-    showHistogram("../images/polenEqualized.tif");
+    //showHistogram("../images/frutas.png");
+    //Mat equalized = HistogramEqualization(image);
+    //imshow("Window Name", equalized);
+    //saveImage("../images/indioEqualized.webp",equalized);
+    //showHistogram("../images/indioEqualized.webp");
     // Wait for any keystroke
     waitKey(0);
     return 0;
