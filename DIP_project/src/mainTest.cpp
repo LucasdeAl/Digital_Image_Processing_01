@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/placa.tif");
+    Mat image = imread("../images/ursosEqualized.jpg");
   
     // Error Handling
     if (image.empty()) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    appKernelMedian(image,{3,3});
+    appKernelSobel(image);
     // Show Image inside a window with
     // the name provided
     //Mat textImage = scanographyWrite(image,"escrever qualquer coisa para testar a escanografia no RGB");
