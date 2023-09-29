@@ -671,9 +671,7 @@ void appKernelMedian(Mat image, std::pair<int, int> msize){
                     }
                 }
                 std::sort(array.begin(), array.end(), std::greater<double>());
-                for(int m=0;m < tam/2;m++)
-                    array.pop_back();
-                pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(array.back() * 255.0);
+                pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(array[(int)tam/2] * 255.0);
             }
         }
     }
