@@ -687,7 +687,7 @@ void appKernelMedian(Mat image, std::pair<int, int> msize){
 
     destroyWindow(windowName);
 }
-void appKernelSobelXY(Mat image){
+void appKernelSobelMagnitude(Mat image){
     std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
     std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
     Mat applied = image.clone();
@@ -700,6 +700,8 @@ void appKernelSobelXY(Mat image){
     int reflin = lin/2, refcol = col/2;
     double maxNeg = 0;
     double maxAbs = 0;
+    
+
     for(int i = 0; i < image.rows; i++)
     {
         for(int j = 0; j < image.cols; j++)
@@ -719,9 +721,9 @@ void appKernelSobelXY(Mat image){
                         }
                     }
                 }
-               if(maxNeg > result1|| maxNeg > result2)
+               if( sqrt(pow(result1,2)+pow(result2,2))> maxAbs)
                {
-                maxNeg = std::min(result1,result2);
+                maxAbs = sqrt(pow(result1,2)+pow(result2,2));
                }
             }
         }
@@ -746,37 +748,7 @@ void appKernelSobelXY(Mat image){
                         }
                     }
                 }
-               if(abs(maxNeg) + result1 > maxAbs|| abs(maxNeg) + result2 > maxAbs)
-               {
-                maxAbs = std::max(abs(maxNeg) + result1,abs(maxNeg) + result2);
-               }
-            }
-        }
-    }
-
-    for(int i = 0; i < image.rows; i++)
-    {
-        for(int j = 0; j < image.cols; j++)
-        {
-            for( int k = 0 ; k < cn; k++){
-                double result1 = 0;
-                double result2 = 0;
-                for(int l = 0; l < lin; l++){
-                    for(int c = 0; c < col; c++){
-                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
-                        if(thisline >= 0 and thisline < image.rows){
-                            if(thiscol >= 0 and thiscol < image.cols){
-                                result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
-                                result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
-
-                            }
-                        }
-                    }
-                }
-               //cout << round((abs(result1)+maxNeg)/maxAbs * 255.0) << " "<< endl; 
-               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result1+abs(maxNeg))/maxAbs * 255.0);
-               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result2+abs(maxNeg))/maxAbs * 255.0);
-
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(sqrt(pow(result1,2)+pow(result2,2))/maxAbs * 255.0);               
             }
         }
     }
