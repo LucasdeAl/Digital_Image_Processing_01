@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/ursosEqualized.jpg");
+    Mat image = imread("../images/Bikesgray.jpg");
   
     // Error Handling
     if (image.empty()) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    appKernelSobel(image);
+    appKernelSobelY(image);
     // Show Image inside a window with
     // the name provided
     //Mat textImage = scanographyWrite(image,"escrever qualquer coisa para testar a escanografia no RGB");

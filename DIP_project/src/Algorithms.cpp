@@ -687,7 +687,7 @@ void appKernelMedian(Mat image, std::pair<int, int> msize){
 
     destroyWindow(windowName);
 }
-void appKernelSobel(Mat image){
+void appKernelSobelXY(Mat image){
     std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
     std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
     Mat applied = image.clone();
@@ -719,9 +719,9 @@ void appKernelSobel(Mat image){
                         }
                     }
                 }
-               if(maxNeg < abs(result1)|| maxNeg < abs(result2))
+               if(maxNeg > result1|| maxNeg > result2)
                {
-                maxNeg = std::max(abs(result1),abs(result2));
+                maxNeg = std::min(result1,result2);
                }
             }
         }
@@ -746,9 +746,9 @@ void appKernelSobel(Mat image){
                         }
                     }
                 }
-               if(maxNeg + abs(result1) > maxAbs|| maxNeg + abs(result2)> maxAbs)
+               if(abs(maxNeg) + result1 > maxAbs|| abs(maxNeg) + result2 > maxAbs)
                {
-                maxAbs = std::max(maxNeg + abs(result1),maxNeg + abs(result1));
+                maxAbs = std::max(abs(maxNeg) + result1,abs(maxNeg) + result2);
                }
             }
         }
@@ -774,15 +774,229 @@ void appKernelSobel(Mat image){
                     }
                 }
                //cout << round((abs(result1)+maxNeg)/maxAbs * 255.0) << " "<< endl; 
-               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((abs(result1)+maxNeg)/maxAbs * 255.0);
-               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((abs(result2)+maxNeg)/maxAbs * 255.0);
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result1+abs(maxNeg))/maxAbs * 255.0);
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result2+abs(maxNeg))/maxAbs * 255.0);
 
             }
         }
     }
 
 
-    String windowName = "Imagem com filtro de Sobel Aplicado";
+    String windowName = "Imagem com filtro de Sobel e x e y aplicado";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+
+
+void appKernelSobelX(Mat image){
+    std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
+    //std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    int lin = 3, col = 3;
+    int reflin = lin/2, refcol = col/2;
+    double maxNeg = 0;
+    double maxAbs = 0;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result1 = 0;
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
+                                //result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
+
+                            }
+                        }
+                    }
+                }
+               if(maxNeg > result1)
+               {
+                maxNeg = result1;
+               }
+            }
+        }
+    }
+
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result1 = 0;
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
+                                //result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
+
+                            }
+                        }
+                    }
+                }
+               if(abs(maxNeg) + result1 > maxAbs)
+               {
+                maxAbs = abs(maxNeg) + result1;
+               }
+            }
+        }
+    }
+
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result1 = 0;
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
+                                //result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
+
+                            }
+                        }
+                    }
+                }
+               //cout << round((abs(result1)+maxNeg)/maxAbs * 255.0) << " "<< endl; 
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result1+abs(maxNeg))/maxAbs * 255.0);
+               //pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result2+abs(maxNeg))/maxAbs * 255.0);
+
+            }
+        }
+    }
+
+
+    String windowName = "Imagem com filtro de Sobel em x Aplicado";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+void appKernelSobelY(Mat image){
+    //std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
+    std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    int lin = 3, col = 3;
+    int reflin = lin/2, refcol = col/2;
+    double maxNeg = 0;
+    double maxAbs = 0;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result1 = 0;
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                //result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
+                                result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
+
+                            }
+                        }
+                    }
+                }
+               if(maxNeg > result2)
+               {
+                maxNeg = result2;
+               }
+            }
+        }
+    }
+
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result1 = 0;
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                //result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
+                                result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
+
+                            }
+                        }
+                    }
+                }
+               if(abs(maxNeg) + result2 > maxAbs)
+               {
+                maxAbs = abs(maxNeg) + result2;
+               }
+            }
+        }
+    }
+
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result1 = 0;
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                //result1 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gx[l*col + c];
+                                result2 += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c];
+
+                            }
+                        }
+                    }
+                }
+               //cout << round((abs(result1)+maxNeg)/maxAbs * 255.0) << " "<< endl; 
+               //pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result1+abs(maxNeg))/maxAbs * 255.0);
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round((result2+abs(maxNeg))/maxAbs * 255.0);
+
+            }
+        }
+    }
+
+
+    String windowName = "Imagem com filtro de Sobel em y aplicado";
 
     namedWindow(windowName);
 
