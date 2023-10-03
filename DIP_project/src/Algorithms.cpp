@@ -1006,15 +1006,71 @@ void appKernelLaplacian(Mat image){
                         }
                     }
                 }
-               double value = round((((double)pixelImagePtr[i*image.cols*cn + j*cn + k]/255.0) - result2)*255); 
-               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = value>0? value : 0;
+               double value = (((double)pixelImagePtr[i*image.cols*cn + j*cn + k]/255.0) - result2); 
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = ceil(value*255)>0? ceil(value*255) : abs(ceil(value*255));
 
             }
         }
     }
 
 
-    String windowName = "Imagem com filtro Laplaciano aplicado";
+    String windowName = "Aguçamento por lapalaciano";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+
+void appKernelHighBoost(Mat image,double f){
+    /*
+    std::vector<double> gy = {1,4,7,4,1,
+                              4,16,26,16,4,
+                              7,26,41,26,7,
+                              4,16,26,16,4,
+                              1,4,7,4,1};
+    */
+   std::vector<double> gy = {1,2,1,2,4,2,1,2,1};
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    double mascara;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    int lin = 3, col = 3;
+    int reflin = lin/2, refcol = col/2;
+    
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result2 = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result2 += ((pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * gy[l*col + c]);
+                            }
+                        }
+                    }
+                }
+               result2/=16;
+               mascara = (pixelImagePtr[i*image.cols*cn + j*cn + k]/255.0) - result2;
+               //pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(255*mascara*f + pixelImagePtr[i*image.cols*cn + j*cn + k]);
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(255*mascara);
+            }
+        }
+    }
+
+
+    String windowName = "Aguçamento por High Boost";
 
     namedWindow(windowName);
 
