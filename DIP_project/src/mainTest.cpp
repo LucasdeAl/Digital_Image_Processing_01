@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/letras.tif",IMREAD_UNCHANGED);
+    Mat image = imread("../images/gutavoroubado.png",IMREAD_UNCHANGED);
   
     // Error Handling
     if (image.empty()) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    appKernelHighBoost(image,4.5);
+    appKernelLaplacian(image);
     // Show Image inside a window with
     // the name provided
     //Mat textImage = scanographyWrite(image,"escrever qualquer coisa para testar a escanografia no RGB");
