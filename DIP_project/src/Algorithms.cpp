@@ -1063,8 +1063,8 @@ void appKernelHighBoost(Mat image,double f){
                 }
                result2/=16;
                mascara = (pixelImagePtr[i*image.cols*cn + j*cn + k]/255.0) - result2;
-               //pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(255*mascara*f + pixelImagePtr[i*image.cols*cn + j*cn + k]);
-               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(255*mascara);
+               double value = round(255*mascara)*f+pixelImagePtr[i*image.cols*cn + j*cn + k];
+               pixelAppliedPtr[i*image.cols*cn + j*cn + k] = value>255?255:value;
             }
         }
     }

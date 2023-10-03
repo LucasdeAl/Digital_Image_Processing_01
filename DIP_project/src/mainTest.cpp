@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    appKernelHighBoost(image,1);
+    appKernelHighBoost(image,4.5);
     // Show Image inside a window with
     // the name provided
     //Mat textImage = scanographyWrite(image,"escrever qualquer coisa para testar a escanografia no RGB");
