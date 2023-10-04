@@ -107,7 +107,7 @@
      <string>Generic Kernel</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_6">
+   <widget class="QRadioButton" name="Fourier">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -117,7 +117,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Fourier Trans</string>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioButton_7">
@@ -310,6 +310,54 @@
     </property>
     <property name="text">
      <string>Escanografia</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="brushSize">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>20</y>
+      <width>160</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>5</number>
+    </property>
+    <property name="maximum">
+     <number>40</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="gaussianBrush">
+    <property name="geometry">
+     <rect>
+      <x>230</x>
+      <y>50</y>
+      <width>91</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Gaussiana</string>
+    </property>
+    <property name="tristate">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="ShowFourier">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>170</y>
+      <width>141</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Accept Transform</string>
     </property>
    </widget>
   </widget>

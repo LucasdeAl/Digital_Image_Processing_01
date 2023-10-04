@@ -20,12 +20,20 @@ public:
     MainWindow(QWidget *parent = nullptr);
     std::vector<std::pair<float, float>> vertexBuffer;
     QBrush paint;
+    QBrush mark;
     QGraphicsScene *scene;
+    QRadialGradient grad;
+    QPixmap imG;
     void ToggleGraphics(int v);
     void ToggleText(int v);
     void setTextualPlaceholder(const char* s);
     std::string getText();
     void clearText();
+    int retrieveBrushSlider();
+    void ToggleFourierTools(int v);
+    void resizeView();
+    void saveView(QString fileName);
+    void zoomImage();
     ~MainWindow();
 
 private slots:
@@ -46,6 +54,12 @@ private slots:
     void on_Escanografia_clicked();
 
     void on_Kernel_clicked();
+
+    void on_Fourier_clicked();
+
+    void on_gaussianBrush_stateChanged(int arg1);
+
+    void on_ShowFourier_clicked();
 
 private:
     Ui::MainWindow *ui;

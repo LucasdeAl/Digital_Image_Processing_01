@@ -19,6 +19,8 @@ int showHistogram(string path);
 
 cv::Mat HistogramEqualization(Mat image);
 
+std::string parseScan(std::string s);
+
 std::string scanographyRead(Mat image);
 
 cv::Mat scanographyWrite(Mat image,string p);
@@ -44,3 +46,7 @@ double parseNumber(int ini, std::string s, int *fim);
 std::pair<double, double> parseLog(std::string s);
 
 std::pair<double, double> parseGamma(std::string s);
+
+std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s);
+
+void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize);
