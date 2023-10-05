@@ -2,6 +2,159 @@
 #include <iterator>
 #include <stdlib.h>
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
+
+RGBcell::RGBcell(int red, int green, int blue){
+    r = red;
+    g = green;
+    b = blue;
+}
+
+RGBcell::RGBcell(){
+    r = 0; g = 0; b = 0;
+}
+
+HSVcell::HSVcell(float hue, float saturation, float value){
+    h = hue; s = saturation; v = value;
+}
+
+HSVcell::HSVcell(){
+    h = 0; s = 0; v = 0;
+}
+
+HSVcell::HSVcell(RGBcell c){
+    float r = ((float)(c.r))/255;
+    float g = ((float)(c.g))/255;
+    float b = ((float)(c.b))/255;
+    float cmax = max2(r, max2(g, b));
+    float cmin = min2(r, min2(g, b));
+    float maxdiff = cmax - cmin;
+    if(maxdiff == 0){
+        h = 0;
+    }
+    else if(cmax == r){
+        h = ((2*pi/6)*((g-b)/maxdiff) + (2*pi));
+        if(h > 2*pi){
+            h -= 2*pi;
+        }
+    } else if(cmax == g){
+        h = ((2*pi/6)*((b-r)/maxdiff) + (2*pi/3));
+        if(h > 2*pi){
+            h -= 2*pi;
+        }
+    } else if(cmax == b){
+        h = ((2*pi/6)*((r-g)/maxdiff) + (4*pi/3));
+        if(h > 2*pi){
+            h -= 2*pi;
+        }
+    } else {h = 0; s = 0; v = 0;}
+
+    if(cmax == 0){
+        s = 0;
+    } else{
+        s = (maxdiff/cmax);
+    }
+    v = cmax;
+}
+
+RGBcell HSVcell::toRGB(){
+    float red = 0, green = 0, blue = 0;
+    if(h >= 0 && h < pi/3){
+        red = 255;
+        green = h*255/(pi/3);
+    } else if(h >= pi/3 && h < 2*pi/3){
+        green = 255;
+        red = 255 - ((h - pi/3)*255/(pi/3));
+    }
+    else if(h >= 2*pi/3 && h < pi){
+        green = 255;
+        blue = (h - 2*pi/3)*255/(pi/3);
+    }
+    else if(h >= pi && h < 4*pi/3){
+        blue = 255;
+        green = 255 - ((h - pi)*255/(pi/3));
+    }
+    else if(h >= 4*pi/3 && h < 5*pi/3){
+        blue = 255;
+        red = (h - 4*pi/3)*255/(pi/3);
+    }
+    else if(h >= 5*pi/3 && h <= 2*pi){
+        red = 255;
+        blue = 255 - ((h - 5*pi/3)*255/(pi/3));
+    }
+    else{
+        red = 0; green = 0; blue = 0;
+    }
+    red += (255 - red) * (1 - s);
+    green += (255 - green) * (1 - s);
+    blue += (255 - blue) * (1 - s);
+
+    red *= v;
+    green *= v;
+    blue *= v;
+
+    return RGBcell(round(red), round(green), round(blue));
+}
+
+MatHsv::MatHsv(cv::Mat image){
+    {
+        try{
+            uint8_t* pixelImagePtr;
+            pixelImagePtr = (uint8_t*)image.data;
+            int cn = image.channels();
+            std::vector<HSVcell> linha;
+            for(int i = 0; i < image.rows; i++)
+            {
+                linha.clear();
+                for(int j = 0; j < image.cols; j++)
+                {
+                    int initial = i*image.cols*cn + j*cn;
+                    if(cn == 3){
+                        int red = pixelImagePtr[initial];
+                        int blue = pixelImagePtr[initial + 1];
+                        int green = pixelImagePtr[initial + 2];
+                        linha.emplace_back(RGBcell(red, green, blue));
+                    } else if(cn == 1){
+                        int gray = pixelImagePtr[initial];
+                        linha.emplace_back(RGBcell(gray, gray, gray));
+                    }
+                    else{
+                        throw "Erro, imagem em outro formato de cores que não é RGB ou GRAYSCALE";
+                    }
+                }
+                data.push_back(linha);
+            }
+            empty = false;
+        }
+        catch(const char* e){
+            std::cout << e << std::endl;
+            data.clear();
+            empty = true;
+        }
+    }
+}
+
+MatHsv::MatHsv(){
+    empty = true;
+}
+
+cv::Mat MatHsv::toRGB(){
+    cv::Mat image(data.size(), data[0].size(), CV_8UC3);
+    uint8_t* pixelImagePtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    int cn = image.channels();
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            RGBcell eq = data[i][j].toRGB();
+            pixelImagePtr[i*image.cols*cn + j*cn] = eq.r;
+            pixelImagePtr[i*image.cols*cn + j*cn + 1] = eq.g;
+            pixelImagePtr[i*image.cols*cn + j*cn + 2] = eq.b;
+        }
+    }
+    return image;
+}
+
 bool saveImage(const std::string& path, const cv::Mat& image) 
 {
     if (image.empty()) 

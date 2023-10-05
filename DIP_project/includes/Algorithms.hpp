@@ -9,6 +9,46 @@
 #include <cmath>
 #include <bits/stdc++.h>
 
+#define pi 3.14159
+#define max2(x,y) ((x>y)?x:y)
+#define min2(x,y) ((x<y)?x:y)
+
+struct RGBcell{
+    int r;
+    int g;
+    int b;
+
+    RGBcell(int red, int green, int blue);
+
+    RGBcell();
+};
+
+struct HSVcell{
+    float h;
+    float s;
+    float v;
+
+    HSVcell(float hue, float saturation, float value);
+
+    HSVcell();
+
+    HSVcell(RGBcell c);
+
+    RGBcell toRGB();
+};
+
+class MatHsv{
+public:
+    std::vector<std::vector<HSVcell>> data;
+    bool empty;
+
+    MatHsv();
+
+    MatHsv(cv::Mat image);
+
+    cv::Mat toRGB();
+};
+
 using namespace cv;
 using namespace std;
 //g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs 

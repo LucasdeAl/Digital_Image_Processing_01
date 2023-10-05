@@ -61,6 +61,8 @@ private slots:
 
     void on_ShowFourier_clicked();
 
+    void on_Sobel_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

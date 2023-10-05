@@ -120,7 +120,7 @@
      <string>Fourier Trans</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_7">
+   <widget class="QRadioButton" name="Sobel">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -130,7 +130,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Sobel</string>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioButton_8">

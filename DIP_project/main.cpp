@@ -6,7 +6,7 @@
 
 MainWindow* w;
 
-enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER};
+enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL};
 enum Visibility{HIDE, SHOW};
 const char* templateAlg[] ={"",
     "",
@@ -162,6 +162,13 @@ void MainWindow::on_Set_clicked()
         w->zoomImage();
         w->scene->setSceneRect(0, 0, (w->imG).width(), (w->imG).height());
         w->scene->addPixmap(w->imG);
+    }
+    case SOBEL:{
+        MatHsv teste(einstein);
+        Mat testeb = teste.toRGB();
+        std::cout << testeb.channels() << std::endl;
+        imshow("teste", testeb);
+        waitKey();
     }
     }
 }
@@ -328,4 +335,13 @@ void MainWindow::on_Fourier_clicked()
     w->ToggleText(HIDE);
     w->ToggleFourierTools(SHOW);
     w->ToggleGraphics(SHOW);
+}
+
+void MainWindow::on_Sobel_clicked()
+{
+    algoritmo = SOBEL;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
 }
