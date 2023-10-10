@@ -110,6 +110,7 @@ MatHsv::MatHsv(cv::Mat image){
                     int initial = i*image.cols*cn + j*cn;
                     if(cn == 3){
                         int red = pixelImagePtr[initial];
+                        int green = pixelImagePtr[initial + 1];
                         int blue = pixelImagePtr[initial + 2];
                         linha.emplace_back(RGBcell(red, green, blue));
                     } else if(cn == 1){
