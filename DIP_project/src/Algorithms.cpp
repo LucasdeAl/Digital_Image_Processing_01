@@ -1320,3 +1320,40 @@ void appKernelHighBoost(Mat image,double f){
 
     destroyWindow(windowName);
 }
+
+
+void changeScale(Mat image,double scale){
+    int newX = image.rows*scale;
+    int newY = image.cols*scale;
+    Mat applied(newX,newY,CV_8UC3,Scalar(0,0,0));
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    for(int k = 0; k < cn; k++)
+    {
+        for(int i = 0; i < newX; i++)
+        {
+            for(int j = 0; j < newY; j++)
+            {
+            int x = (int)ceil(i/scale);
+            int y = (int)ceil(j/scale);
+            pixelAppliedPtr[i*newY*cn + j*cn + k] = (uint8_t)pixelImagePtr[x*image.cols*cn+y*cn+k];
+            }
+        }
+    }
+
+    String windowName = "Imagem com escala mdificada";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+
+

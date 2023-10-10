@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/Bikesgray.jpg",IMREAD_UNCHANGED);
+    Mat image = imread("../images/letras.tif",IMREAD_UNCHANGED);
   
     // Error Handling
     if (image.empty()) {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    appKernelWeightedMean(image,{1,2,3,4,5,6,7,8,9},{3,3});
+    changeScale(image,2);
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided
