@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/letras.tif",IMREAD_UNCHANGED);
+    Mat image = imread("../images/maquina.PNG",IMREAD_UNCHANGED);
   
     // Error Handling
     if (image.empty()) {
