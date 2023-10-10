@@ -795,6 +795,100 @@ void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize)
 }
 
 
+
+
+void appKernelSimpleMean(Mat image, std::pair<int, int> msize){
+    int lin = msize.first, col = msize.second;
+    double size = lin*col;
+    std::vector<double> kernel(size,1); 
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    
+    int reflin = lin/2, refcol = col/2;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * kernel[l*col + c];
+                            }
+                        }
+                    }
+                }
+                result = result/size;
+                pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(result * 255.0);
+            }
+        }
+    }
+
+
+    String windowName = "Imagem com filtro média Aritmética simples";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+
+void appKernelWeightedMean(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
+    int lin = msize.first, col = msize.second;
+    Mat applied = image.clone();
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    int cn = image.channels();
+    int reflin = lin/2, refcol = col/2;
+    double sum;
+    for(int i : kernel) sum+=i;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < cn; k++){
+                double result = 0;
+                for(int l = 0; l < lin; l++){
+                    for(int c = 0; c < col; c++){
+                        int thisline = i + (l - reflin), thiscol = j + (c - refcol);
+                        if(thisline >= 0 and thisline < image.rows){
+                            if(thiscol >= 0 and thiscol < image.cols){
+                                result += (pixelImagePtr[thisline*image.cols*cn + thiscol*cn + k]/255.0) * kernel[l*col + c];
+                            }
+                        }
+                    }
+                }
+                result = result/sum;
+                pixelAppliedPtr[i*image.cols*cn + j*cn + k] = round(result * 255.0);
+            }
+        }
+    }
+
+
+    String windowName = "Imagem com filtro média Aritmética Ponderada";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
 void appKernelMedian(Mat image, std::pair<int, int> msize){
     std::vector<double> kernel;
     int tam = msize.first*msize.second;
