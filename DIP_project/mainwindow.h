@@ -28,12 +28,16 @@ public:
     void ToggleText(int v);
     void setTextualPlaceholder(const char* s);
     std::string getText();
+    std::string getName();
     void clearText();
     int retrieveBrushSlider();
     void ToggleFourierTools(int v);
+    void ToggleBars(int v);
     void resizeView();
     void saveView(QString fileName);
     void zoomImage();
+    std::vector<float> retrieveBars();
+    float retrievePerc();
     ~MainWindow();
 
 private slots:
@@ -62,6 +66,12 @@ private slots:
     void on_ShowFourier_clicked();
 
     void on_Sobel_clicked();
+
+    void on_NegativoHSV_clicked();
+
+    void on_Grayscale_clicked();
+
+    void on_Colors_clicked();
 
 private:
     Ui::MainWindow *ui;

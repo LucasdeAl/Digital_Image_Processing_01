@@ -96,7 +96,7 @@ struct HSVcell{
 };
 
 int main(){
-    RGBcell random(200, 200, 200);
+    RGBcell random(250, 150, 200);
     HSVcell hey(random);
     RGBcell newcell = hey.toRGB();
     std::cout << "Original: " << random.r << " - " << random.g << " - " << random.b << "\n" <<

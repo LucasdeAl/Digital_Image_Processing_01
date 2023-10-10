@@ -6,7 +6,7 @@
 
 MainWindow* w;
 
-enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL};
+enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL, GRAYSCALE, NEGATIVOHSV, COLORS};
 enum Visibility{HIDE, SHOW};
 const char* templateAlg[] ={"",
     "",
@@ -87,10 +87,13 @@ void QGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
 void MainWindow::on_Set_clicked()
 {
     std::string read;
-    Mat einstein = imread("../images/ursos.jpg", IMREAD_GRAYSCALE);
+    std::string imgpath = "../images/";
+    imgpath = imgpath + w->getName();
+    Mat einstein = imread(imgpath);
     if (einstein.empty())
     {
         cout << "Could not open or find the image" << endl;
+        return;
     }
     switch (algoritmo){
     case LIMIARIZACAO:{
@@ -162,6 +165,7 @@ void MainWindow::on_Set_clicked()
         w->zoomImage();
         w->scene->setSceneRect(0, 0, (w->imG).width(), (w->imG).height());
         w->scene->addPixmap(w->imG);
+        break;
     }
     case SOBEL:{
         MatHsv teste(einstein);
@@ -169,6 +173,20 @@ void MainWindow::on_Set_clicked()
         std::cout << testeb.channels() << std::endl;
         imshow("teste", testeb);
         waitKey();
+        break;
+    }
+    case NEGATIVOHSV:
+        Vnegative(einstein);
+        break;
+    case GRAYSCALE:
+        grayscale(einstein);
+        break;
+    case COLORS:
+    {
+        std::vector<float> values = w->retrieveBars();
+        HSVcell cor(values[0], values[1], values[2]);
+        std::cout << values[0] << " - " << values[1] << " - " << values[2] << " - " << w->retrievePerc() << std::endl;
+        colorFilter(einstein, cor, w->retrievePerc());
     }
     }
 }
@@ -254,6 +272,7 @@ int main(int argc, char *argv[])
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleText(HIDE);
+    w->ToggleBars(HIDE);
     window.show();
     return a.exec();
 }
@@ -273,6 +292,7 @@ void MainWindow::on_Limiarizacao_clicked()
     algoritmo = LIMIARIZACAO;
     w->ToggleText(HIDE);
     w->ToggleFourierTools(HIDE);
+    w->ToggleBars(HIDE);
     LimpaLimiarizacao();
     w->ToggleGraphics(SHOW);
 }
@@ -283,6 +303,7 @@ void MainWindow::on_Logaritmo_clicked()
     algoritmo = LOGARITMO;
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
+    w->ToggleBars(HIDE);
     w->setTextualPlaceholder(templateAlg[LOGARITMO]);
     w->clearText();
     w->ToggleText(SHOW);
@@ -293,6 +314,7 @@ void MainWindow::on_Negativo_clicked()
 {
     algoritmo = NEGATIVO;
     w->ToggleGraphics(HIDE);
+    w->ToggleBars(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleText(HIDE);
 }
@@ -302,6 +324,7 @@ void MainWindow::on_Gamma_clicked()
 {
     algoritmo = GAMMA;
     w->ToggleGraphics(HIDE);
+    w->ToggleBars(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[GAMMA]);
     w->clearText();
@@ -312,6 +335,7 @@ void MainWindow::on_Escanografia_clicked()
 {
     algoritmo = ESCANOGRAFIA;
     w->ToggleGraphics(HIDE);
+    w->ToggleBars(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[ESCANOGRAFIA]);
     w->clearText();
@@ -322,6 +346,7 @@ void MainWindow::on_Kernel_clicked()
 {
     algoritmo = KERNEL;
     w->ToggleGraphics(HIDE);
+    w->ToggleBars(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[KERNEL]);
     w->clearText();
@@ -333,6 +358,7 @@ void MainWindow::on_Fourier_clicked()
     algoritmo = FOURIER;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleBars(HIDE);
     w->ToggleFourierTools(SHOW);
     w->ToggleGraphics(SHOW);
 }
@@ -345,3 +371,35 @@ void MainWindow::on_Sobel_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }
+
+void MainWindow::on_NegativoHSV_clicked()
+{
+    algoritmo = NEGATIVOHSV;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_Grayscale_clicked()
+{
+    algoritmo = GRAYSCALE;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_Colors_clicked()
+{
+    algoritmo = COLORS;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleBars(SHOW);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+

@@ -110,8 +110,7 @@ MatHsv::MatHsv(cv::Mat image){
                     int initial = i*image.cols*cn + j*cn;
                     if(cn == 3){
                         int red = pixelImagePtr[initial];
-                        int blue = pixelImagePtr[initial + 1];
-                        int green = pixelImagePtr[initial + 2];
+                        int blue = pixelImagePtr[initial + 2];
                         linha.emplace_back(RGBcell(red, green, blue));
                     } else if(cn == 1){
                         int gray = pixelImagePtr[initial];
@@ -1321,7 +1320,6 @@ void appKernelHighBoost(Mat image,double f){
     destroyWindow(windowName);
 }
 
-
 void changeScale(Mat image,double scale){
     int newX = image.rows*scale;
     int newY = image.cols*scale;
@@ -1354,6 +1352,64 @@ void changeScale(Mat image,double scale){
 
     destroyWindow(windowName);
 }
+//------------------------------------------------------------------------------------------------
 
+void Vnegative(Mat image){
+    MatHsv a(image);
+    for(int i = 0; i < a.data.size(); i++){
+        for(int j = 0; j < a.data[0].size(); j++){
+            a.data[i][j].h = pi + a.data[i][j].h;
+            if(a.data[i][j].h < 0){
+               a.data[i][j].h += 2*pi;
+            }
+            else if (a.data[i][j].h >= 2*pi){
+               a.data[i][j].h -= 2*pi;
+            }
+        }
+    }
+    cv::Mat result(a.toRGB());
+    imshow("Negativo em HSV", result);
+    waitKey();
+}
 
+void grayscale(Mat image){
+    MatHsv a(image);
+    for(int i = 0; i < a.data.size(); i++){
+        for(int j = 0; j < a.data[0].size(); j++){
+            a.data[i][j].s = 0;
+        }
+    }
+    cv::Mat result(a.toRGB());
+    imshow("Escala de Cinza", result);
+    waitKey();
+}
 
+float isBiggerOp(float a, float b){
+    if(a < b){
+        return 1;
+    }
+    else return -1;
+}
+
+void colorFilter(Mat image, HSVcell color, float percentage){
+    MatHsv a(image);
+    for(int i = 0; i < a.data.size(); i++){
+        for(int j = 0; j < a.data[0].size(); j++){
+            float op = isBiggerOp(a.data[i][j].h, color.h);
+            if(max2(a.data[i][j].h, color.h) - min2(a.data[i][j].h, color.h)  > std::fabs(min2(a.data[i][j].h, color.h) - max2(a.data[i][j].h, color.h))){
+               op = -op;
+            }
+            a.data[i][j].h = a.data[i][j].h + op * ((max2(a.data[i][j].h, color.h) - min2(a.data[i][j].h, color.h)) * percentage);
+            op = isBiggerOp(a.data[i][j].s, color.s);
+            a.data[i][j].s = a.data[i][j].s + op * ((max2(a.data[i][j].s, color.s) - min2(a.data[i][j].s, color.s)) * percentage);
+            if(a.data[i][j].h < 0){
+               a.data[i][j].h += 2*pi;
+            }
+            else if (a.data[i][j].h >= 2*pi){
+               a.data[i][j].h -= 2*pi;
+            }
+        }
+    }
+    cv::Mat result(a.toRGB());
+    imshow("Imagem com filtro de cor", result);
+}

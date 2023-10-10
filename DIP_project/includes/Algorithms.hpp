@@ -90,3 +90,12 @@ std::pair<double, double> parseGamma(std::string s);
 std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s);
 
 void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize);
+
+//----------------------------------------------------------------------------------------------------------------------
+//ALGORITMOS EM HSV
+
+void Vnegative(Mat image);
+
+void grayscale(Mat image);
+
+void colorFilter(Mat image, HSVcell color, float percentage);

@@ -95,3 +95,35 @@ void MainWindow::zoomImage(){
     ui->imagem->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 }
 
+std::string MainWindow::getName(){
+    return ui->Uploader->text().toStdString();
+}
+
+void MainWindow::ToggleBars(int v){
+    if(v == 0){
+        ui->Hue->hide();
+        ui->Saturation->hide();
+        ui->Value->hide();
+        ui->Percentage->hide();
+    } else{
+        ui->Hue->show();
+        ui->Saturation->show();
+        ui->Value->show();
+        ui->Percentage->show();
+    }
+}
+
+std::vector<float> MainWindow::retrieveBars(){
+    std::vector<float> values;
+    float hue = ((float)(ui->Hue->sliderPosition()))/1000;
+    float saturation = ((float)(ui->Saturation->sliderPosition()))/1000;
+    float value = ((float)(ui->Value->sliderPosition()))/1000;
+    values.push_back(hue);
+    values.push_back(saturation);
+    values.push_back(value);
+    return values;
+}
+
+float MainWindow::retrievePerc(){
+    return ((float)ui->Percentage->sliderPosition())/1000;
+}
