@@ -1321,7 +1321,42 @@ void appKernelHighBoost(Mat image,double f){
     destroyWindow(windowName);
 }
 
-void changeScale(Mat image,double scale){
+void changeScaleProximity(Mat image,double scale){
+    int newX = image.rows*scale;
+    int newY = image.cols*scale;
+    int cn = image.channels();
+    Mat applied;
+    if(cn==1) applied = Mat(newX,newY,CV_8UC1,Scalar::all(0));
+    else applied = Mat(newX,newY,CV_8UC3,Scalar::all(0));
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAppliedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAppliedPtr = (uint8_t*)applied.data;
+    for(int k = 0; k < cn; k++)
+    {
+        for(int i = 0; i < newX; i++)
+        {
+            int x = (int)ceil(i/scale);
+            for(int j = 0; j < newY; j++)
+            {
+                int y = (int)ceil(j/scale);
+                pixelAppliedPtr[i*newY*cn + j*cn + k] = pixelImagePtr[x*image.cols*cn+y*cn+k];
+            }
+        }
+    }
+
+    String windowName = "Imagem com escala modificada";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+}
+
+void changeScaleBilinear(Mat image,double scale){
     int newX = image.rows*scale;
     int newY = image.cols*scale;
     int cn = image.channels();
