@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    changeScale(image,2);
+    changeScaleBilinear(image,1.5);
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided
