@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/letras.tif",IMREAD_UNCHANGED);
+    Mat image = imread("../images/maquina.PNG",IMREAD_UNCHANGED);
   
     // Error Handling
     if (image.empty()) {
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     }
   
     //changeScaleBilinear(image,2);
-    rotateBilinear(image,45);
+    rotate(image,45);
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided

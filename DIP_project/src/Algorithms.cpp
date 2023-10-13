@@ -1453,6 +1453,44 @@ void changeScaleBilinear(Mat image, double scale) {
     destroyWindow(windowName);
     }
 
+void rotate(cv::Mat image, double degrees) {
+    double rads = (-Pi / 180) * degrees;
+    double diag = sqrt(image.rows * image.rows + image.cols * image.cols);
+    int newX = static_cast<int>(ceil(diag));
+    int newY = newX;
+    int cn = image.channels();
+
+    cv::Mat applied;
+    if (cn == 1)
+        applied = cv::Mat(newX, newY, CV_8UC1, cv::Scalar::all(0));
+    else
+        applied = cv::Mat(newX, newY, CV_8UC3, cv::Scalar::all(0));
+
+    for (int i = 0; i < newX; i++) {
+        for (int j = 0; j < newY; j++) {
+             double x = (i - newX / 2) * std::cos(rads) + (j - newY / 2) * std::sin(rads) + image.cols / 2;
+            double y = -(i - newX / 2) * std::sin(rads) + (j - newY / 2) * std::cos(rads) + image.rows / 2;
+
+            if (x >= 0 && x < image.cols && y >= 0 && y < image.rows) {
+                if (cn > 1) {
+                    for (int ch = 0; ch < 3; ch++) {
+                       applied.at<cv::Vec3b>(j, i)[ch] = image.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x))[ch];
+                    }
+                } else {
+                    applied.at<uchar>(j, i) = image.at<uchar>(static_cast<int>(y), static_cast<int>(x));
+                }
+            }
+        }
+    }
+
+
+    cv::String windowName = "Imagem rotacionada por Interpolação por proximidade";
+    cv::namedWindow(windowName);
+    cv::imshow(windowName, applied);
+    cv::waitKey(0);
+    cv::destroyWindow(windowName);
+}
+
 
 void rotateBilinear(cv::Mat image, double degrees) {
     double rads = (-Pi / 180) * degrees;
