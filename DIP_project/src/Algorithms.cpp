@@ -124,6 +124,7 @@ MatHsv::MatHsv(cv::Mat image){
                 data.push_back(linha);
             }
             empty = false;
+            isGray = cn == 1;
         }
         catch(const char* e){
             std::cout << e << std::endl;
@@ -135,24 +136,41 @@ MatHsv::MatHsv(cv::Mat image){
 
 MatHsv::MatHsv(){
     empty = true;
+    isGray = false;
 }
 
 cv::Mat MatHsv::toRGB(){
-    cv::Mat image(data.size(), data[0].size(), CV_8UC3);
-    uint8_t* pixelImagePtr;
-    pixelImagePtr = (uint8_t*)image.data;
-    int cn = image.channels();
-    for(int i = 0; i < image.rows; i++)
-    {
-        for(int j = 0; j < image.cols; j++)
+    if(!isGray){
+        cv::Mat image(data.size(), data[0].size(), CV_8UC3);
+        uint8_t* pixelImagePtr;
+        pixelImagePtr = (uint8_t*)image.data;
+        int cn = image.channels();
+        for(int i = 0; i < image.rows; i++)
         {
-            RGBcell eq = data[i][j].toRGB();
-            pixelImagePtr[i*image.cols*cn + j*cn] = eq.r;
-            pixelImagePtr[i*image.cols*cn + j*cn + 1] = eq.g;
-            pixelImagePtr[i*image.cols*cn + j*cn + 2] = eq.b;
+            for(int j = 0; j < image.cols; j++)
+            {
+                RGBcell eq = data[i][j].toRGB();
+                pixelImagePtr[i*image.cols*cn + j*cn] = eq.r;
+                pixelImagePtr[i*image.cols*cn + j*cn + 1] = eq.g;
+                pixelImagePtr[i*image.cols*cn + j*cn + 2] = eq.b;
+            }
         }
+        return image;
     }
-    return image;
+    else{
+        cv::Mat image(data.size(), data[0].size(), CV_8UC1);
+        uint8_t* pixelImagePtr;
+        pixelImagePtr = (uint8_t*)image.data;
+        for(int i = 0; i < image.rows; i++)
+        {
+            for(int j = 0; j < image.cols; j++)
+            {
+                RGBcell eq = data[i][j].toRGB();
+                pixelImagePtr[i*image.cols + j] = eq.r;
+            }
+        }
+        return image;
+    }
 }
 
 bool saveImage(const std::string& path, const cv::Mat& image) 
@@ -1359,13 +1377,18 @@ void Vnegative(Mat image){
     MatHsv a(image);
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
-            a.data[i][j].h = pi + a.data[i][j].h;
-            if(a.data[i][j].h < 0){
-               a.data[i][j].h += 2*pi;
+            if(a.isGray){
+                a.data[i][j].h = pi + a.data[i][j].h;
+                if(a.data[i][j].h < 0){
+                   a.data[i][j].h += 2*pi;
+                }
+                else if (a.data[i][j].h >= 2*pi){
+                   a.data[i][j].h -= 2*pi;
+                }
+
+                    a.data[i][j].s = 1 - a.data[i][j].s;
             }
-            else if (a.data[i][j].h >= 2*pi){
-               a.data[i][j].h -= 2*pi;
-            }
+            a.data[i][j].v = 1 - a.data[i][j].v;
         }
     }
     cv::Mat result(a.toRGB());
@@ -1385,30 +1408,14 @@ void grayscale(Mat image){
     waitKey();
 }
 
-float isBiggerOp(float a, float b){
-    if(a < b){
-        return 1;
-    }
-    else return -1;
-}
-
-void colorFilter(Mat image, HSVcell color, float percentage){
+void colorFilter(Mat image, HSVcell color){
     MatHsv a(image);
+    float huep = color.h/(2*pi);
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
-            float op = isBiggerOp(a.data[i][j].h, color.h);
-            if(max2(a.data[i][j].h, color.h) - min2(a.data[i][j].h, color.h)  > std::fabs(min2(a.data[i][j].h, color.h) - max2(a.data[i][j].h, color.h))){
-               op = -op;
-            }
-            a.data[i][j].h = a.data[i][j].h + op * ((max2(a.data[i][j].h, color.h) - min2(a.data[i][j].h, color.h)) * percentage);
-            op = isBiggerOp(a.data[i][j].s, color.s);
-            a.data[i][j].s = a.data[i][j].s + op * ((max2(a.data[i][j].s, color.s) - min2(a.data[i][j].s, color.s)) * percentage);
-            if(a.data[i][j].h < 0){
-               a.data[i][j].h += 2*pi;
-            }
-            else if (a.data[i][j].h >= 2*pi){
-               a.data[i][j].h -= 2*pi;
-            }
+            a.data[i][j].h *= huep;
+            a.data[i][j].s *= color.s;
+            a.data[i][j].v *= color.v;
         }
     }
     cv::Mat result(a.toRGB());

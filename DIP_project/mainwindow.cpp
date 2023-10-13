@@ -104,12 +104,10 @@ void MainWindow::ToggleBars(int v){
         ui->Hue->hide();
         ui->Saturation->hide();
         ui->Value->hide();
-        ui->Percentage->hide();
     } else{
         ui->Hue->show();
         ui->Saturation->show();
         ui->Value->show();
-        ui->Percentage->show();
     }
 }
 
@@ -122,8 +120,4 @@ std::vector<float> MainWindow::retrieveBars(){
     values.push_back(saturation);
     values.push_back(value);
     return values;
-}
-
-float MainWindow::retrievePerc(){
-    return ((float)ui->Percentage->sliderPosition())/1000;
 }

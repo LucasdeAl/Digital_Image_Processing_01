@@ -14,9 +14,9 @@
 #define min2(x,y) ((x<y)?x:y)
 
 struct RGBcell{
-    int r;
-    int g;
-    int b;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
 
     RGBcell(int red, int green, int blue);
 
@@ -41,6 +41,7 @@ class MatHsv{
 public:
     std::vector<std::vector<HSVcell>> data;
     bool empty;
+    bool isGray;
 
     MatHsv();
 
@@ -98,4 +99,4 @@ void Vnegative(Mat image);
 
 void grayscale(Mat image);
 
-void colorFilter(Mat image, HSVcell color, float percentage);
+void colorFilter(Mat image, HSVcell color);

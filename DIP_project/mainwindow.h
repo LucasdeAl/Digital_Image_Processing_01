@@ -37,7 +37,6 @@ public:
     void saveView(QString fileName);
     void zoomImage();
     std::vector<float> retrieveBars();
-    float retrievePerc();
     ~MainWindow();
 
 private slots:

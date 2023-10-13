@@ -1,13 +1,15 @@
+#include <cstdint>
 #include <iostream>
 #include <cmath>
+#include <inttypes.h>
 #define pi 3.14159
 #define max2(x, y) ((x>y)?x:y)
 #define min2(x, y) ((x<y)?x:y)
 
 struct RGBcell{
-    int r;
-    int g;
-    int b;
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
 
     RGBcell(int red, int green, int blue){
         r = red;
@@ -96,10 +98,15 @@ struct HSVcell{
 };
 
 int main(){
-    RGBcell random(250, 150, 200);
-    HSVcell hey(random);
-    RGBcell newcell = hey.toRGB();
-    std::cout << "Original: " << random.r << " - " << random.g << " - " << random.b << "\n" <<
-                "HSV values: " << hey.h << " - " << hey.s << " - " << hey.v << "\n" <<
-                "Inverse: " << newcell.r << " - " << newcell.g << " - " << newcell.b << std::endl;
+    RGBcell random(255, 255, 255);
+    for(int i = 0; i < 1000; i++){
+        HSVcell test(random);
+        test.v = 0.001 * i;
+        RGBcell aux = test.toRGB();
+        float diff = (((float)(random.r))/1000)*i - aux.b;
+        if(std::abs(diff) > 0.45){
+            std::cout << diff << std::endl;
+        }
+    }
+    
 }

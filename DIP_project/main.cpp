@@ -185,8 +185,7 @@ void MainWindow::on_Set_clicked()
     {
         std::vector<float> values = w->retrieveBars();
         HSVcell cor(values[0], values[1], values[2]);
-        std::cout << values[0] << " - " << values[1] << " - " << values[2] << " - " << w->retrievePerc() << std::endl;
-        colorFilter(einstein, cor, w->retrievePerc());
+        colorFilter(einstein, cor);
     }
     }
 }
