@@ -1,8 +1,8 @@
 #include "../includes/Algorithms.hpp"
 #include <iterator>
 #include <stdlib.h>
-//g++ opencv.cpp -o opencv -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
-
+#include <eigen3/Eigen/Dense>
+//g++ $(pkg-config --cflags eigen3) mainTest.cpp -o mainTest -lopencv_core -lopencv_highgui -lopencv_imgcodecs -lopencv_imgproc
 RGBcell::RGBcell(int red, int green, int blue){
     r = red;
     g = green;
@@ -32,19 +32,19 @@ HSVcell::HSVcell(RGBcell c){
         h = 0;
     }
     else if(cmax == r){
-        h = ((2*pi/6)*((g-b)/maxdiff) + (2*pi));
-        if(h > 2*pi){
-            h -= 2*pi;
+        h = ((2*Pi/6)*((g-b)/maxdiff) + (2*Pi));
+        if(h > 2*Pi){
+            h -= 2*Pi;
         }
     } else if(cmax == g){
-        h = ((2*pi/6)*((b-r)/maxdiff) + (2*pi/3));
-        if(h > 2*pi){
-            h -= 2*pi;
+        h = ((2*Pi/6)*((b-r)/maxdiff) + (2*Pi/3));
+        if(h > 2*Pi){
+            h -= 2*Pi;
         }
     } else if(cmax == b){
-        h = ((2*pi/6)*((r-g)/maxdiff) + (4*pi/3));
-        if(h > 2*pi){
-            h -= 2*pi;
+        h = ((2*Pi/6)*((r-g)/maxdiff) + (4*Pi/3));
+        if(h > 2*Pi){
+            h -= 2*Pi;
         }
     } else {h = 0; s = 0; v = 0;}
 
@@ -58,28 +58,28 @@ HSVcell::HSVcell(RGBcell c){
 
 RGBcell HSVcell::toRGB(){
     float red = 0, green = 0, blue = 0;
-    if(h >= 0 && h < pi/3){
+    if(h >= 0 && h < Pi/3){
         red = 255;
-        green = h*255/(pi/3);
-    } else if(h >= pi/3 && h < 2*pi/3){
+        green = h*255/(Pi/3);
+    } else if(h >= Pi/3 && h < 2*Pi/3){
         green = 255;
-        red = 255 - ((h - pi/3)*255/(pi/3));
+        red = 255 - ((h - Pi/3)*255/(Pi/3));
     }
-    else if(h >= 2*pi/3 && h < pi){
+    else if(h >= 2*Pi/3 && h < Pi){
         green = 255;
-        blue = (h - 2*pi/3)*255/(pi/3);
+        blue = (h - 2*Pi/3)*255/(Pi/3);
     }
-    else if(h >= pi && h < 4*pi/3){
+    else if(h >= Pi && h < 4*Pi/3){
         blue = 255;
-        green = 255 - ((h - pi)*255/(pi/3));
+        green = 255 - ((h - Pi)*255/(Pi/3));
     }
-    else if(h >= 4*pi/3 && h < 5*pi/3){
+    else if(h >= 4*Pi/3 && h < 5*Pi/3){
         blue = 255;
-        red = (h - 4*pi/3)*255/(pi/3);
+        red = (h - 4*Pi/3)*255/(Pi/3);
     }
-    else if(h >= 5*pi/3 && h <= 2*pi){
+    else if(h >= 5*Pi/3 && h <= 2*Pi){
         red = 255;
-        blue = 255 - ((h - 5*pi/3)*255/(pi/3));
+        blue = 255 - ((h - 5*Pi/3)*255/(Pi/3));
     }
     else{
         red = 0; green = 0; blue = 0;
@@ -1342,26 +1342,28 @@ void appKernelHighBoost(Mat image,double f){
 void changeScale(Mat image,double scale){
     int newX = image.rows*scale;
     int newY = image.cols*scale;
-    Mat applied(newX,newY,CV_8UC3,Scalar(0,0,0));
+    int cn = image.channels();
+    Mat applied;
+    if(cn==1) applied = Mat(newX,newY,CV_8UC1,Scalar::all(0));
+    else applied = Mat(newX,newY,CV_8UC3,Scalar::all(0));
     uint8_t* pixelImagePtr;
     uint8_t* pixelAppliedPtr;
     pixelImagePtr = (uint8_t*)image.data;
     pixelAppliedPtr = (uint8_t*)applied.data;
-    int cn = image.channels();
     for(int k = 0; k < cn; k++)
     {
         for(int i = 0; i < newX; i++)
         {
+            int x = (int)ceil(i/scale);
             for(int j = 0; j < newY; j++)
             {
-            int x = (int)ceil(i/scale);
-            int y = (int)ceil(j/scale);
-            pixelAppliedPtr[i*newY*cn + j*cn + k] = (uint8_t)pixelImagePtr[x*image.cols*cn+y*cn+k];
+                int y = (int)ceil(j/scale);
+                pixelAppliedPtr[i*newY*cn + j*cn + k] = pixelImagePtr[x*image.cols*cn+y*cn+k];
             }
         }
     }
 
-    String windowName = "Imagem com escala mdificada";
+    String windowName = "Imagem com escala modificada por Interpolção por proximidade";
 
     namedWindow(windowName);
 
@@ -1371,6 +1373,89 @@ void changeScale(Mat image,double scale){
 
     destroyWindow(windowName);
 }
+
+
+void changeScaleBilinear(Mat image, double scale) {
+    int newX = static_cast<int>(image.rows * scale);
+    int newY = static_cast<int>(image.cols * scale);
+    int cn = image.channels();
+    Mat applied;
+    if (cn == 1)
+        applied = Mat(newX, newY, CV_8UC1, Scalar::all(0));
+    else
+        applied = Mat(newX, newY, CV_8UC3, Scalar::all(0));
+
+    Eigen::MatrixXd A(4, 4);
+    Eigen::VectorXd B(4);
+
+    for (int i = 0; i < newX; i++) {
+        for (int j = 0; j < newY; j++) {
+            double x = i / scale;
+            double y = j / scale;
+            int x1 = std::max(static_cast<int>(x), 0);
+            int x2 = std::min(x1 + 1, image.rows - 1);
+            int y1 = std::max(static_cast<int>(y), 0);
+            int y2 = std::min(y1 + 1, image.cols - 1);
+
+            if(cn>1){
+                for (int ch = 0; ch < 3; ch++) {
+                    A << x1, y1, x1 * y1, 1,
+                        x1, y2, x1 * y2, 1,
+                        x2, y1, x2 * y1, 1,
+                        x2, y2, x2 * y2, 1;
+                
+                    B << image.at<Vec3b>(x1, y1)[ch],
+                        image.at<Vec3b>(x1, y2)[ch],
+                        image.at<Vec3b>(x2, y1)[ch],
+                        image.at<Vec3b>(x2, y2)[ch];
+
+                    Eigen::VectorXd coefficients = A.colPivHouseholderQr().solve(B);
+                    double a = coefficients(0);
+                    double b = coefficients(1);
+                    double c = coefficients(2);
+                    double d = coefficients(3);
+                    
+                    applied.at<Vec3b>(i, j)[ch] = static_cast<uint8_t>(a * x + b * y + c * x * y + d);
+                }
+            }
+                else
+                {
+                     A << x1, y1, x1 * y1, 1,
+                        x1, y2, x1 * y2, 1,
+                        x2, y1, x2 * y1, 1,
+                        x2, y2, x2 * y2, 1;
+                
+                    B << image.at<uint8_t>(x1, y1),
+                        image.at<uint8_t>(x1, y2),
+                        image.at<uint8_t>(x2, y1),
+                        image.at<uint8_t>(x2, y2);
+
+                    Eigen::VectorXd coefficients = A.colPivHouseholderQr().solve(B);
+                    double a = coefficients(0);
+                    double b = coefficients(1);
+                    double c = coefficients(2);
+                    double d = coefficients(3);
+                    
+                    applied.at<uint8_t>(i, j) = static_cast<uint8_t>(a * x + b * y + c * x * y + d);
+                }
+            }
+        }
+    
+
+    String windowName = "Imagem com escala modificada por interpolação Bilinear";
+
+    namedWindow(windowName);
+
+    imshow(windowName, applied);
+
+    waitKey(0);
+
+    destroyWindow(windowName);
+    }
+
+
+
+
 //------------------------------------------------------------------------------------------------
 
 void Vnegative(Mat image){

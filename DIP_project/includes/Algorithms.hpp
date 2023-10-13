@@ -9,7 +9,7 @@
 #include <cmath>
 #include <bits/stdc++.h>
 
-#define pi 3.14159
+#define Pi 3.14159
 #define max2(x,y) ((x>y)?x:y)
 #define min2(x,y) ((x<y)?x:y)
 
