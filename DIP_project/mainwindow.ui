@@ -237,7 +237,7 @@
      <string>Negativo HSV</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_16">
+   <widget class="QRadioButton" name="adjustCMY">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -247,10 +247,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>CMY/RGB</string>
     </property>
    </widget>
-   <widget class="QRadioButton" name="radioButton_17">
+   <widget class="QRadioButton" name="sep_chrom">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -260,7 +260,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>RadioButton</string>
+     <string>Sepia/Chroma</string>
     </property>
    </widget>
    <widget class="QRadioButton" name="radioButton_18">
@@ -416,6 +416,58 @@
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="wantRGB">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>320</y>
+      <width>91</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>RGB</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="checkChroma">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>310</y>
+      <width>91</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Chroma Key</string>
+    </property>
+   </widget>
+   <widget class="QSlider" name="chromaDist">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>370</y>
+      <width>160</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>442</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="secondUpload">
+    <property name="geometry">
+     <rect>
+      <x>550</x>
+      <y>340</y>
+      <width>113</width>
+      <height>26</height>
+     </rect>
     </property>
    </widget>
   </widget>

@@ -104,10 +104,12 @@ void MainWindow::ToggleBars(int v){
         ui->Hue->hide();
         ui->Saturation->hide();
         ui->Value->hide();
+        ui->wantRGB->hide();
     } else{
         ui->Hue->show();
         ui->Saturation->show();
         ui->Value->show();
+        ui->wantRGB->show();
     }
 }
 
@@ -121,3 +123,34 @@ std::vector<float> MainWindow::retrieveBars(){
     values.push_back(value);
     return values;
 }
+
+void MainWindow::hideRGBCheck(){
+    ui->wantRGB->hide();
+}
+
+void MainWindow::ToggleChroma(int v){
+    if(v == 0){
+        ui->checkChroma->hide();
+    } else{
+        ui->checkChroma->show();
+    }
+}
+
+void MainWindow::ToggleDist(int v){
+    if(v == 0){
+        ui->chromaDist->hide();
+        ui->secondUpload->hide();
+    } else{
+        ui->chromaDist->show();
+        ui->secondUpload->show();
+    }
+}
+
+int MainWindow::retrieveDist(){
+    return ui->chromaDist->sliderPosition();
+}
+
+std::string MainWindow::retrieveSecondFile(){
+    return ui->secondUpload->text().toStdString();
+}
+

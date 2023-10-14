@@ -6,7 +6,7 @@
 
 MainWindow* w;
 
-enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL, GRAYSCALE, NEGATIVOHSV, COLORS};
+enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL, GRAYSCALE, NEGATIVOHSV, COLORS, CMY, SEPIA_CHROMA};
 enum Visibility{HIDE, SHOW};
 const char* templateAlg[] ={"",
     "",
@@ -24,6 +24,8 @@ Mat reference = Mat(cv::Size(1,1), 0);
 Mat scanimg = Mat(cv::Size(1,1), 0);
 bool can_draw = false;
 bool gaussianB = false;
+bool adjustRGB = false;
+bool setChroma = false;
 QImage trans;
 
 void LimpaLimiarizacao(){
@@ -185,7 +187,27 @@ void MainWindow::on_Set_clicked()
     {
         std::vector<float> values = w->retrieveBars();
         HSVcell cor(values[0], values[1], values[2]);
-        colorFilter(einstein, cor);
+        colorFilterHSV(einstein, cor);
+    }
+    case CMY:{
+        std::vector<float> values = w->retrieveBars();
+        if(adjustRGB){
+            colorFilterRGB(einstein, values);
+        }
+        else{
+            colorFilterCMY(einstein, values);
+        }
+    }
+    case SEPIA_CHROMA:{
+        if(setChroma){
+            std::string secondPath = "../images/";
+            secondPath = secondPath + w->retrieveSecondFile();
+            Mat secondImg = imread(secondPath);
+            applyChromaKey(einstein, w->retrieveDist(), secondImg);
+        }
+        else{
+            applySepia(einstein);
+        }
     }
     }
 }
@@ -272,6 +294,8 @@ int main(int argc, char *argv[])
     w->ToggleFourierTools(HIDE);
     w->ToggleText(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleDist(HIDE);
     window.show();
     return a.exec();
 }
@@ -286,12 +310,36 @@ void MainWindow::on_gaussianBrush_stateChanged(int arg1)
     }
 }
 
+void MainWindow::on_wantRGB_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        adjustRGB = true;
+    }
+    else{
+        adjustRGB = false;
+    }
+}
+
+void MainWindow::on_checkChroma_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        setChroma = true;
+        w->ToggleDist(SHOW);
+    }
+    else{
+        setChroma = false;
+        w->ToggleDist(HIDE);
+    }
+}
+
 void MainWindow::on_Limiarizacao_clicked()
 {
     algoritmo = LIMIARIZACAO;
     w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleChroma(HIDE);
     LimpaLimiarizacao();
     w->ToggleGraphics(SHOW);
 }
@@ -303,6 +351,8 @@ void MainWindow::on_Logaritmo_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->setTextualPlaceholder(templateAlg[LOGARITMO]);
     w->clearText();
     w->ToggleText(SHOW);
@@ -314,6 +364,8 @@ void MainWindow::on_Negativo_clicked()
     algoritmo = NEGATIVO;
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleText(HIDE);
 }
@@ -324,6 +376,8 @@ void MainWindow::on_Gamma_clicked()
     algoritmo = GAMMA;
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[GAMMA]);
     w->clearText();
@@ -335,6 +389,8 @@ void MainWindow::on_Escanografia_clicked()
     algoritmo = ESCANOGRAFIA;
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[ESCANOGRAFIA]);
     w->clearText();
@@ -346,6 +402,8 @@ void MainWindow::on_Kernel_clicked()
     algoritmo = KERNEL;
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[KERNEL]);
     w->clearText();
@@ -357,6 +415,8 @@ void MainWindow::on_Fourier_clicked()
     algoritmo = FOURIER;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleFourierTools(SHOW);
     w->ToggleGraphics(SHOW);
@@ -367,6 +427,8 @@ void MainWindow::on_Sobel_clicked()
     algoritmo = SOBEL;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }
@@ -377,6 +439,8 @@ void MainWindow::on_NegativoHSV_clicked()
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }
@@ -386,7 +450,9 @@ void MainWindow::on_Grayscale_clicked()
     algoritmo = GRAYSCALE;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }
@@ -397,6 +463,33 @@ void MainWindow::on_Colors_clicked()
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
     w->ToggleBars(SHOW);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+    w->hideRGBCheck();
+}
+
+void MainWindow::on_adjustCMY_clicked()
+{
+    algoritmo = CMY;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleBars(SHOW);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_sep_chrom_clicked()
+{
+    algoritmo = SEPIA_CHROMA;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleChroma(SHOW);
+    w->ToggleBars(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }

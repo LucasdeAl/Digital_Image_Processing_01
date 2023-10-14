@@ -99,4 +99,12 @@ void Vnegative(Mat image);
 
 void grayscale(Mat image);
 
-void colorFilter(Mat image, HSVcell color);
+void colorFilterHSV(Mat image, HSVcell color);
+
+void colorFilterRGB(Mat image, std::vector<float> color);
+
+void colorFilterCMY(Mat image, std::vector<float> rgbco);
+
+void applyChromaKey(Mat image, float dist, Mat secondImg);
+
+void applySepia(Mat image);

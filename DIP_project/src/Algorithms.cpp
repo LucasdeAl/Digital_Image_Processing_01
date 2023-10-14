@@ -1463,12 +1463,12 @@ void Vnegative(Mat image){
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
             if(a.isGray){
-                a.data[i][j].h = pi + a.data[i][j].h;
+                a.data[i][j].h = Pi + a.data[i][j].h;
                 if(a.data[i][j].h < 0){
-                   a.data[i][j].h += 2*pi;
+                   a.data[i][j].h += 2*Pi;
                 }
-                else if (a.data[i][j].h >= 2*pi){
-                   a.data[i][j].h -= 2*pi;
+                else if (a.data[i][j].h >= 2*Pi){
+                   a.data[i][j].h -= 2*Pi;
                 }
 
                     a.data[i][j].s = 1 - a.data[i][j].s;
@@ -1493,9 +1493,9 @@ void grayscale(Mat image){
     waitKey();
 }
 
-void colorFilter(Mat image, HSVcell color){
+void colorFilterHSV(Mat image, HSVcell color){
     MatHsv a(image);
-    float huep = color.h/(2*pi);
+    float huep = color.h/(2*Pi);
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
             a.data[i][j].h *= huep;
@@ -1504,5 +1504,127 @@ void colorFilter(Mat image, HSVcell color){
         }
     }
     cv::Mat result(a.toRGB());
-    imshow("Imagem com filtro de cor", result);
+    imshow("Imagem com ajuste HSV", result);
+    waitKey();
+}
+
+void colorFilterRGB(Mat image, std::vector<float> rgbco){
+    Mat adjusted = Mat(image.rows, image.cols, CV_8UC3);
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAdjustedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAdjustedPtr = (uint8_t*)adjusted.data;
+    int cn = image.channels();
+    rgbco[0] /= 2*Pi;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < 3; k++){
+                    if(cn == 1){
+                        pixelAdjustedPtr[i*adjusted.cols + j + k] = pixelImagePtr[i*image.cols + j] * rgbco[2-k];
+                    }
+                    else{
+                        pixelAdjustedPtr[i*adjusted.cols*cn + j*cn + k] = pixelImagePtr[i*image.cols*cn + j*cn + k] * rgbco[2-k];
+                    }
+            }
+        }
+    }
+
+    imshow("Imagem com ajuste RGB", adjusted);
+    waitKey();
+}
+
+void colorFilterCMY(Mat image, std::vector<float> rgbco){
+    Mat adjusted = Mat(image.rows, image.cols, CV_8UC3);
+    uint8_t* pixelImagePtr;
+    uint8_t* pixelAdjustedPtr;
+    pixelImagePtr = (uint8_t*)image.data;
+    pixelAdjustedPtr = (uint8_t*)adjusted.data;
+    int cn = image.channels();
+    rgbco[0] /= 2*Pi;
+    for(int i = 0; i < image.rows; i++)
+    {
+        for(int j = 0; j < image.cols; j++)
+        {
+            for( int k = 0 ; k < 3; k++){
+                    if(cn == 1){
+                        pixelAdjustedPtr[i*adjusted.cols + j + k] = pixelImagePtr[i*image.cols + j] * (1.0 - rgbco[2-k]);
+                    }
+                    else{
+                        pixelAdjustedPtr[i*adjusted.cols*cn + j*cn + k] = pixelImagePtr[i*image.cols*cn + j*cn + k] * (1.0 - rgbco[2-k]);
+                    }
+            }
+        }
+    }
+
+    imshow("Imagem com ajuste CMY", adjusted);
+    waitKey();
+}
+
+void applyChromaKey(Mat image, float dist, Mat secondImg){
+    Mat applied = Mat(image.rows, image.cols, CV_8UC3);
+    uint8_t* pixelImagePtr;
+    uint8_t* secondImagePtr;
+    uint8_t* appliedPtr;
+    pixelImagePtr = (uint8_t *) image.data;
+    secondImagePtr = (uint8_t *) secondImg.data;
+    appliedPtr = (uint8_t *) applied.data;
+    if(image.channels() == 1){
+        return;
+    }
+    else{
+        int cn = 3;
+        for(int i = 0; i < image.rows; i++)
+        {
+            for(int j = 0; j < image.cols; j++)
+            {
+                    unsigned int actual = i*image.cols*cn + j*cn;
+                    float r = pixelImagePtr[actual];
+                    float g = pixelImagePtr[actual + 1];
+                    float b = pixelImagePtr[actual + 2];
+                    float gf = 255 - g;
+                    float distx = sqrt(r*r + gf*gf + b*b);
+                    if(distx > dist){
+                        appliedPtr[actual] = r;
+                        appliedPtr[actual + 1] = g;
+                        appliedPtr[actual + 2] = b;
+                    }
+                    else{
+                        unsigned int actualp = i*secondImg.cols*cn + j*cn;
+                        if(actual >= secondImg.rows * secondImg.cols * cn){
+                            actualp = actual%secondImg.rows * secondImg.cols * cn;
+                        }
+                        appliedPtr[actual] = secondImagePtr[actualp];
+                        appliedPtr[actual + 1] = secondImagePtr[actualp + 1];
+                        appliedPtr[actual + 2] = secondImagePtr[actualp + 2];
+                    }
+            }
+        }
+
+        imshow("Imagem com Chroma Key", applied);
+        waitKey();
+    }
+}
+
+#define isPlus(a, b) ((a>=b)?-1:1)
+
+void applySepia(Mat image){
+    MatHsv a(image);
+    for(int i = 0; i < a.data.size(); i++){
+        for(int j = 0; j < a.data[0].size(); j++){
+            float dist = abs(a.data[i][j].h - Pi);
+            a.data[i][j].h += isPlus(a.data[i][j].h, Pi) * dist * 0.8;
+            if(a.data[i][j].h < 0){
+                    a.data[i][j].h += 2*Pi;
+            }
+            else if (a.data[i][j].h >= 2*Pi){
+                    a.data[i][j].h -= 2*Pi;
+            }
+            a.data[i][j].s = 0.2;
+        }
+    }
+    Mat applied = a.toRGB();
+    imshow("Aplicacao do Sepia", applied);
+    waitKey();
 }

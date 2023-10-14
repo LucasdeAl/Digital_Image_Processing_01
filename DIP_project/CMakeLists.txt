@@ -13,7 +13,7 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(OpenCV REQUIRED)
 
-include_directories(includes/ ${OpenCV_INCLUDE_DIRS})
+include_directories(includes/ ${OpenCV_INCLUDE_DIRS} $ENV{EIGEN3_INCLUDE_DIR})
 
 set(PROJECT_SOURCES
         main.cpp

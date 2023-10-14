@@ -36,6 +36,11 @@ public:
     void resizeView();
     void saveView(QString fileName);
     void zoomImage();
+    void hideRGBCheck();
+    void ToggleChroma(int v);
+    int retrieveDist();
+    void ToggleDist(int v);
+    std::string retrieveSecondFile();
     std::vector<float> retrieveBars();
     ~MainWindow();
 
@@ -71,6 +76,14 @@ private slots:
     void on_Grayscale_clicked();
 
     void on_Colors_clicked();
+
+    void on_wantRGB_stateChanged(int arg1);
+
+    void on_adjustCMY_clicked();
+
+    void on_sep_chrom_clicked();
+
+    void on_checkChroma_stateChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
