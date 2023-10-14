@@ -1392,10 +1392,10 @@ void changeScaleBilinear(Mat image, double scale) {
         for (int j = 0; j < newY; j++) {
             double x = i / scale;
             double y = j / scale;
-            int x1 = std::max(static_cast<int>(x), 0);
-            int x2 = std::min(x1 + 1, image.rows - 1);
-            int y1 = std::max(static_cast<int>(y), 0);
-            int y2 = std::min(y1 + 1, image.cols - 1);
+            int x1 = static_cast<int>(x);
+            int x2 = std::min(x1 + 1,image.cols-1);
+            int y1 = static_cast<int>(y);
+            int y2 = std::min(y1 + 1,image.cols-1);
 
             if(cn>1){
                 for (int ch = 0; ch < 3; ch++) {
@@ -1453,7 +1453,160 @@ void changeScaleBilinear(Mat image, double scale) {
     destroyWindow(windowName);
     }
 
+void rotate(cv::Mat image, double degrees) {
+    double rads = (-Pi / 180) * degrees;
+    double diag = sqrt(image.rows * image.rows + image.cols * image.cols);
+    int newX = static_cast<int>(ceil(diag));
+    int newY = newX;
+    int cn = image.channels();
 
+    cv::Mat applied;
+    if (cn == 1)
+        applied = cv::Mat(newX, newY, CV_8UC1, cv::Scalar::all(0));
+    else
+        applied = cv::Mat(newX, newY, CV_8UC3, cv::Scalar::all(0));
+
+    for (int i = 0; i < newX; i++) {
+        for (int j = 0; j < newY; j++) {
+             double x = (i - newX / 2) * std::cos(rads) + (j - newY / 2) * std::sin(rads) + image.cols / 2;
+            double y = -(i - newX / 2) * std::sin(rads) + (j - newY / 2) * std::cos(rads) + image.rows / 2;
+
+            if (x >= 0 && x < image.cols && y >= 0 && y < image.rows) {
+                if (cn > 1) {
+                    for (int ch = 0; ch < 3; ch++) {
+                       applied.at<cv::Vec3b>(j, i)[ch] = image.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x))[ch];
+                    }
+                } else {
+                    applied.at<uchar>(j, i) = image.at<uchar>(static_cast<int>(y), static_cast<int>(x));
+                }
+            }
+        }
+    }
+
+
+    cv::String windowName = "Imagem rotacionada por Interpolação por proximidade";
+    cv::namedWindow(windowName);
+    cv::imshow(windowName, applied);
+    cv::waitKey(0);
+    cv::destroyWindow(windowName);
+}
+
+
+void rotateBilinear(cv::Mat image, double degrees) {
+    double rads = (-Pi / 180) * degrees;
+    double diag = sqrt(image.rows * image.rows + image.cols * image.cols);
+    int newX = static_cast<int>(ceil(diag));
+    int newY = newX;
+    int cn = image.channels();
+
+    cv::Mat applied;
+    if (cn == 1)
+        applied = cv::Mat(newX, newY, CV_8UC1, cv::Scalar::all(0));
+    else
+        applied = cv::Mat(newX, newY, CV_8UC3, cv::Scalar::all(0));
+
+    for (int i = 0; i < newX; i++) {
+        for (int j = 0; j < newY; j++) {
+             double x = (i - newX / 2) * std::cos(rads) + (j - newY / 2) * std::sin(rads) + image.cols / 2;
+            double y = -(i - newX / 2) * std::sin(rads) + (j - newY / 2) * std::cos(rads) + image.rows / 2;
+
+            if (x >= 0 && x < image.cols && y >= 0 && y < image.rows) {
+                if (cn > 1) {
+                    for (int ch = 0; ch < 3; ch++) {
+                        cv::Mat A(4, 4, CV_64F);
+                        cv::Mat B(4, 1, CV_64F);
+
+                        int x1 = static_cast<int>(x);
+                        int x2 = x1 + 1;
+                        int y1 = static_cast<int>(y);
+                        int y2 = y1 + 1;
+
+                        A.at<double>(0, 0) = x1;
+                        A.at<double>(0, 1) = y1;
+                        A.at<double>(0, 2) = x1 * y1;
+                        A.at<double>(0, 3) = 1;
+
+                        A.at<double>(1, 0) = x1;
+                        A.at<double>(1, 1) = y2;
+                        A.at<double>(1, 2) = x1 * y2;
+                        A.at<double>(1, 3) = 1;
+
+                        A.at<double>(2, 0) = x2;
+                        A.at<double>(2, 1) = y1;
+                        A.at<double>(2, 2) = x2 * y1;
+                        A.at<double>(2, 3) = 1;
+
+                        A.at<double>(3, 0) = x2;
+                        A.at<double>(3, 1) = y2;
+                        A.at<double>(3, 2) = x2 * y2;
+                        A.at<double>(3, 3) = 1;
+
+                        B.at<double>(0, 0) = image.at<cv::Vec3b>(y1, x1)[ch];
+                        B.at<double>(1, 0) = image.at<cv::Vec3b>(y2, x1)[ch];
+                        B.at<double>(2, 0) = image.at<cv::Vec3b>(y1, x2)[ch];
+                        B.at<double>(3, 0) = image.at<cv::Vec3b>(y2, x2)[ch];
+
+                        cv::Mat coefficients = A.inv() * B;
+                        double a = coefficients.at<double>(0, 0);
+                        double b = coefficients.at<double>(1, 0);
+                        double c = coefficients.at<double>(2, 0);
+                        double d = coefficients.at<double>(3, 0);
+
+                        applied.at<cv::Vec3b>(j, i)[ch] = static_cast<uint8_t>(a * x + b * y + c * x * y + d);
+                    }
+                } else {
+                    cv::Mat A(4, 4, CV_64F);
+                    cv::Mat B(4, 1, CV_64F);
+
+                    int x1 = static_cast<int>(x);
+                    int x2 = x1 + 1;
+                    int y1 = static_cast<int>(y);
+                    int y2 = y1 + 1;
+
+                    A.at<double>(0, 0) = x1;
+                    A.at<double>(0, 1) = y1;
+                    A.at<double>(0, 2) = x1 * y1;
+                    A.at<double>(0, 3) = 1;
+
+                    A.at<double>(1, 0) = x1;
+                    A.at<double>(1, 1) = y2;
+                    A.at<double>(1, 2) = x1 * y2;
+                    A.at<double>(1, 3) = 1;
+
+                    A.at<double>(2, 0) = x2;
+                    A.at<double>(2, 1) = y1;
+                    A.at<double>(2, 2) = x2 * y1;
+                    A.at<double>(2, 3) = 1;
+
+                    A.at<double>(3, 0) = x2;
+                    A.at<double>(3, 1) = y2;
+                    A.at<double>(3, 2) = x2 * y2;
+                    A.at<double>(3, 3) = 1;
+
+                    B.at<double>(0, 0) = image.at<uint8_t>(y1, x1);
+                    B.at<double>(1, 0) = image.at<uint8_t>(y2, x1);
+                    B.at<double>(2, 0) = image.at<uint8_t>(y1, x2);
+                    B.at<double>(3, 0) = image.at<uint8_t>(y2, x2);
+
+                    cv::Mat coefficients = A.inv() * B;
+                    double a = coefficients.at<double>(0, 0);
+                    double b = coefficients.at<double>(1, 0);
+                    double c = coefficients.at<double>(2, 0);
+                    double d = coefficients.at<double>(3, 0);
+
+                    applied.at<uint8_t>(j, i) = static_cast<uint8_t>(a * x + b * y + c * x * y + d);
+                }
+            }
+        }
+    }
+
+
+    cv::String windowName = "Imagem rotacionada por Interpolação Bilinear";
+    cv::namedWindow(windowName);
+    cv::imshow(windowName, applied);
+    cv::waitKey(0);
+    cv::destroyWindow(windowName);
+}
 
 
 //------------------------------------------------------------------------------------------------
@@ -1501,7 +1654,7 @@ void colorFilterHSV(Mat image, HSVcell color){
             a.data[i][j].h *= huep;
             a.data[i][j].s *= color.s;
             a.data[i][j].v *= color.v;
-        }
+            }
     }
     cv::Mat result(a.toRGB());
     imshow("Imagem com ajuste HSV", result);

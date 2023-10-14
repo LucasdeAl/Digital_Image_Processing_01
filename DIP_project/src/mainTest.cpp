@@ -28,7 +28,8 @@ int main(int argc, char** argv)
         return -1;
     }
   
-    changeScaleBilinear(image,1.5);
+    //changeScaleBilinear(image,2);
+    rotate(image,45);
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided
