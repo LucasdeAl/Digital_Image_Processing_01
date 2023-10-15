@@ -27,9 +27,9 @@ int main(int argc, char** argv)
         cin.get();  
         return -1;
     }
-  
+    //rotateBilinear(image,60);
     //changeScaleBilinear(image,2);
-    rotate(image,45);
+    showHistogramHSV("../images/letras.tif");
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided

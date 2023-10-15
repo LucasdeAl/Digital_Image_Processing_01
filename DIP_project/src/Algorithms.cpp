@@ -202,7 +202,7 @@ int showHistogram(string path)
     {
     return EXIT_FAILURE;
     }
-        vector<Mat> bgr_planes;
+    vector<Mat> bgr_planes;
     split( src, bgr_planes );
     int histSize = 256;
     float range[] = { 0, 256 }; //the upper boundary is exclusive
@@ -215,9 +215,11 @@ int showHistogram(string path)
     int hist_w = 512, hist_h = 400;
     int bin_w = cvRound( (double) hist_w/histSize );
     Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    
     normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
     normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
     normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+
     for( int i = 1; i < histSize; i++ )
     {
     line( histImage, Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ),
@@ -232,6 +234,65 @@ int showHistogram(string path)
     }
     imshow("Source image", src );
     imshow("calcHist Demo", histImage );
+    waitKey();
+    return EXIT_SUCCESS;
+}
+
+int showHistogramHSV(string path)
+{
+    Mat src = imread(path);
+    if (src.empty())
+    {
+        return EXIT_FAILURE;
+    }
+
+    MatHsv image(src);
+
+    std::vector<std::vector<HSVcell>> hsvData = image.data;
+    std::vector<float> vValues;
+
+    for (int i = 0; i < hsvData.size(); i++)
+    {
+        for (int j = 0; j < hsvData[i].size(); j++)
+        {
+            vValues.push_back(hsvData[i][j].v);
+        }
+    }
+
+    int histSize = 256;
+    float range[] = { 0, 256 }; 
+    const float* histRange[] = { range };
+    bool uniform = true, accumulate = false;
+    Mat v_hist;
+    float max =0;
+    for(float value: vValues)
+    {
+        if(value>max) max = value;
+    }
+    std::vector<uint8_t> vValuesUint8;
+    for (size_t i = 0; i < vValues.size(); i++) {
+        uint8_t normalizedValue = static_cast<uint8_t>((vValues[i] / max) * 255.0);
+        vValuesUint8.push_back(normalizedValue);
+    }
+
+    cv::Mat vValuesMat(vValuesUint8); 
+
+    calcHist(&vValuesMat, 1, 0, Mat(), v_hist, 1, &histSize, histRange, uniform, accumulate);
+
+    int hist_w = 512, hist_h = 400;
+    int bin_w = cvRound((double)hist_w / histSize);
+    Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+    normalize(v_hist, v_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+
+    for (int i = 1; i < histSize; i++)
+    {
+        line(histImage, Point(bin_w * (i - 1), hist_h - cvRound(v_hist.at<float>(i - 1))),
+             Point(bin_w * i, hist_h - cvRound(v_hist.at<float>(i))),
+             Scalar(255, 0, 0), 2, 8, 0); 
+    }
+
+    imshow("Source image", src);
+    imshow("Histogram of V Component", histImage);
     waitKey();
     return EXIT_SUCCESS;
 }
@@ -1484,10 +1545,10 @@ void rotate(cv::Mat image, double degrees) {
             if (x >= 0 && x < image.cols && y >= 0 && y < image.rows) {
                 if (cn > 1) {
                     for (int ch = 0; ch < 3; ch++) {
-                       applied.at<cv::Vec3b>(j, i)[ch] = image.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x))[ch];
+                         applied.at<cv::Vec3b>(j, i)[ch] = image.at<cv::Vec3b>(y, x)[ch];
                     }
                 } else {
-                    applied.at<uchar>(j, i) = image.at<uchar>(static_cast<int>(y), static_cast<int>(x));
+                    applied.at<uint8_t>(j, i) =  image.at<uint8_t>(y, x);
                 }
             }
         }
