@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     }
     //rotateBilinear(image,60);
     //changeScaleBilinear(image,2);
-    showHistogramHSV("../images/tajmahal.jpg");
+    showHistogramHSV("../images/letras.tif");
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided
