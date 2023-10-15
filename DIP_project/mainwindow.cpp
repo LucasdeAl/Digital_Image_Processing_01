@@ -154,3 +154,43 @@ std::string MainWindow::retrieveSecondFile(){
     return ui->secondUpload->text().toStdString();
 }
 
+void MainWindow::ToggleHist(int v){
+    if(v == 0){
+        ui->histogramaHSV->hide();
+        ui->histogramaEq->hide();
+    } else{
+        ui->histogramaHSV->show();
+        ui->histogramaEq->show();
+    }
+}
+
+void MainWindow::setPath(std::string path){
+    QString qpath(path.c_str());
+    ui->Uploader->setText(qpath);
+}
+
+void MainWindow::ToggleSobel(int v){
+    if(v == 0){
+        ui->sobelX->hide();
+        ui->sobelY->hide();
+    } else{
+        ui->sobelX->show();
+        ui->sobelY->show();
+    }
+}
+
+void MainWindow::TogglePond(int v){
+    if(v == 0){
+        ui->mediaPond->hide();
+    } else{
+        ui->mediaPond->show();
+    }
+}
+
+void MainWindow::ToggleBoost(int v){
+    if(v == 0){
+        ui->highBoost->hide();
+    } else{
+        ui->highBoost->show();
+    }
+}

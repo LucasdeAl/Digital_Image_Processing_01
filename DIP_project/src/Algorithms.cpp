@@ -173,6 +173,7 @@ cv::Mat MatHsv::toRGB(){
     }
 }
 
+
 bool saveImage(const std::string& path, const cv::Mat& image) 
 {
     if (image.empty()) 
@@ -429,7 +430,7 @@ string scanographyRead(Mat image)
 
 
 
-void logarithm(Mat image, double base, double c, bool isNormalized)
+Mat logarithm(Mat image, double base, double c, bool isNormalized)
 {
     Mat newImage = image.clone();
     double b,g,r,bmax=1,gmax=1,rmax=1;
@@ -490,9 +491,10 @@ void logarithm(Mat image, double base, double c, bool isNormalized)
     waitKey(0); // Wait for any keystroke in the window
 
     destroyWindow(windowName); //destroy the created window
+    return newImage;
 }
 
-void negative(Mat image)
+Mat negative(Mat image)
 {
     Mat negative = image.clone();
     uint8_t* pixelImagePtr;
@@ -519,10 +521,12 @@ void negative(Mat image)
     waitKey(0); // Wait for any keystroke in the window
 
     destroyWindow(windowName); //destroy the created window
+
+    return negative;
 }
 
 
-void gammaC(Mat image,double c,double gamma)
+Mat gammaC(Mat image,double c,double gamma)
 {
     Mat newImage = image.clone();
     double b;
@@ -554,6 +558,8 @@ void gammaC(Mat image,double c,double gamma)
     waitKey(0); // Wait for any keystroke in the window
 
     destroyWindow(windowName); //destroy the created window
+
+    return newImage;
 }
 
 std::vector<std::pair<float, float>> equacionaRetas(std::vector<std::pair<float, float>> buffer){
@@ -566,7 +572,7 @@ std::vector<std::pair<float, float>> equacionaRetas(std::vector<std::pair<float,
     return equacoes;
 }
 
-void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image){
+Mat limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image){
     Mat limiar = image.clone();
     uint8_t* pixelImagePtr;
     uint8_t* pixelLimiarPtr;
@@ -598,6 +604,8 @@ void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vec
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return limiar;
 }
 
 double converteDigito(char c){
@@ -770,7 +778,7 @@ std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s){
     }
 }
 
-void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
+Mat appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
     Mat applied = image.clone();
     uint8_t* pixelImagePtr;
     uint8_t* pixelAppliedPtr;
@@ -810,6 +818,8 @@ void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize)
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
 
@@ -1611,11 +1621,11 @@ void rotateBilinear(cv::Mat image, double degrees) {
 
 //------------------------------------------------------------------------------------------------
 
-void Vnegative(Mat image){
+Mat Vnegative(Mat image){
     MatHsv a(image);
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
-            if(a.isGray){
+            if(!a.isGray){
                 a.data[i][j].h = Pi + a.data[i][j].h;
                 if(a.data[i][j].h < 0){
                    a.data[i][j].h += 2*Pi;
@@ -1632,21 +1642,24 @@ void Vnegative(Mat image){
     cv::Mat result(a.toRGB());
     imshow("Negativo em HSV", result);
     waitKey();
+    return result;
 }
 
-void grayscale(Mat image){
+Mat grayscale(Mat image){
     MatHsv a(image);
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
             a.data[i][j].s = 0;
         }
     }
+    a.isGray = true;
     cv::Mat result(a.toRGB());
     imshow("Escala de Cinza", result);
     waitKey();
+    return result;
 }
 
-void colorFilterHSV(Mat image, HSVcell color){
+Mat colorFilterHSV(Mat image, HSVcell color){
     MatHsv a(image);
     float huep = color.h/(2*Pi);
     for(int i = 0; i < a.data.size(); i++){
@@ -1659,9 +1672,10 @@ void colorFilterHSV(Mat image, HSVcell color){
     cv::Mat result(a.toRGB());
     imshow("Imagem com ajuste HSV", result);
     waitKey();
+    return result;
 }
 
-void colorFilterRGB(Mat image, std::vector<float> rgbco){
+Mat colorFilterRGB(Mat image, std::vector<float> rgbco){
     Mat adjusted = Mat(image.rows, image.cols, CV_8UC3);
     uint8_t* pixelImagePtr;
     uint8_t* pixelAdjustedPtr;
@@ -1686,9 +1700,10 @@ void colorFilterRGB(Mat image, std::vector<float> rgbco){
 
     imshow("Imagem com ajuste RGB", adjusted);
     waitKey();
+    return adjusted;
 }
 
-void colorFilterCMY(Mat image, std::vector<float> rgbco){
+Mat colorFilterCMY(Mat image, std::vector<float> rgbco){
     Mat adjusted = Mat(image.rows, image.cols, CV_8UC3);
     uint8_t* pixelImagePtr;
     uint8_t* pixelAdjustedPtr;
@@ -1713,9 +1728,10 @@ void colorFilterCMY(Mat image, std::vector<float> rgbco){
 
     imshow("Imagem com ajuste CMY", adjusted);
     waitKey();
+    return adjusted;
 }
 
-void applyChromaKey(Mat image, float dist, Mat secondImg){
+Mat applyChromaKey(Mat image, float dist, Mat secondImg){
     Mat applied = Mat(image.rows, image.cols, CV_8UC3);
     uint8_t* pixelImagePtr;
     uint8_t* secondImagePtr;
@@ -1724,7 +1740,7 @@ void applyChromaKey(Mat image, float dist, Mat secondImg){
     secondImagePtr = (uint8_t *) secondImg.data;
     appliedPtr = (uint8_t *) applied.data;
     if(image.channels() == 1){
-        return;
+        return Mat(image);
     }
     else{
         int cn = 3;
@@ -1758,11 +1774,12 @@ void applyChromaKey(Mat image, float dist, Mat secondImg){
         imshow("Imagem com Chroma Key", applied);
         waitKey();
     }
+    return applied;
 }
 
 #define isPlus(a, b) ((a>=b)?-1:1)
 
-void applySepia(Mat image){
+Mat applySepia(Mat image){
     MatHsv a(image);
     for(int i = 0; i < a.data.size(); i++){
         for(int j = 0; j < a.data[0].size(); j++){
@@ -1780,4 +1797,17 @@ void applySepia(Mat image){
     Mat applied = a.toRGB();
     imshow("Aplicacao do Sepia", applied);
     waitKey();
+    return applied;
+}
+
+Mat returnGray(Mat image){
+    MatHsv a(image);
+    for(int i = 0; i < a.data.size(); i++){
+        for(int j = 0; j < a.data[0].size(); j++){
+            a.data[i][j].s = 0;
+        }
+    }
+    a.isGray = true;
+    cv::Mat result(a.toRGB());
+    return result;
 }

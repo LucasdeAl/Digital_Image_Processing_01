@@ -42,6 +42,11 @@ public:
     void ToggleDist(int v);
     std::string retrieveSecondFile();
     std::vector<float> retrieveBars();
+    void ToggleHist(int v);
+    void ToggleSobel(int v);
+    void setPath(std::string path);
+    void TogglePond(int v);
+    void ToggleBoost(int v);
     ~MainWindow();
 
 private slots:
@@ -84,6 +89,24 @@ private slots:
     void on_sep_chrom_clicked();
 
     void on_checkChroma_stateChanged(int arg1);
+
+    void on_Histograma_clicked();
+
+    void on_histogramaEq_stateChanged(int arg1);
+
+    void on_histogramaHSV_stateChanged(int arg1);
+
+    void on_sobelY_stateChanged(int arg1);
+
+    void on_sobelX_stateChanged(int arg1);
+
+    void on_radioButton_8_clicked();
+
+    void on_mediaPond_stateChanged(int arg1);
+
+    void on_radioButton_13_clicked();
+
+    void on_Laplacian_clicked();
 
 private:
     Ui::MainWindow *ui;

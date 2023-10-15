@@ -6,7 +6,7 @@
 
 MainWindow* w;
 
-enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL, GRAYSCALE, NEGATIVOHSV, COLORS, CMY, SEPIA_CHROMA};
+enum Algorithms{NONE, LIMIARIZACAO, LOGARITMO, NEGATIVO, GAMMA, ESCANOGRAFIA, KERNEL, FOURIER, SOBEL, MEDIA, MEDIANA, TRANSFORMS, LAPLACIAN, GRAYSCALE, NEGATIVOHSV, COLORS, CMY, SEPIA_CHROMA, HISTOGRAMA};
 enum Visibility{HIDE, SHOW};
 const char* templateAlg[] ={"",
     "",
@@ -26,6 +26,11 @@ bool can_draw = false;
 bool gaussianB = false;
 bool adjustRGB = false;
 bool setChroma = false;
+bool histHSV = false;
+bool histEq = false;
+bool sobX = false, sobY = false;
+bool pond = false;
+bool isHB = false;
 QImage trans;
 
 void LimpaLimiarizacao(){
@@ -89,9 +94,11 @@ void QGraphicsScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event){
 void MainWindow::on_Set_clicked()
 {
     std::string read;
-    std::string imgpath = "../images/";
-    imgpath = imgpath + w->getName();
-    Mat einstein = imread(imgpath);
+    std::string imgname = "../images/";
+    std::string imgpath = imgname + w->getName();
+    Mat einstein = imread(imgpath, IMREAD_UNCHANGED);
+    std::cout << einstein.channels() << std::endl;
+    Mat saved = Mat(einstein);
     if (einstein.empty())
     {
         cout << "Could not open or find the image" << endl;
@@ -102,36 +109,53 @@ void MainWindow::on_Set_clicked()
         w->scene->addLine(w->vertexBuffer.back().first, w->vertexBuffer.back().second, 255, w->vertexBuffer.back().second, Qt::SolidLine);
         w->vertexBuffer.emplace_back(255, w->vertexBuffer.back().second);
         std::vector<std::pair<float, float>> eqBuffer = equacionaRetas(w->vertexBuffer);
-        limiarizacaoPorPartes(w->vertexBuffer, eqBuffer, einstein);
+        saved = limiarizacaoPorPartes(w->vertexBuffer, eqBuffer, einstein);
+        imgpath = "../images/limiar.jpg";
+        imgname = "limiar.jpg";
         break;}
     case LOGARITMO:{
         read = w->getText();
         auto dataLog = parseLog(read);
-        logarithm(einstein, dataLog.first, dataLog.second, true);
+        saved = logarithm(einstein, dataLog.first, dataLog.second, true);
+        imgpath = "../images/log.jpg";
+        imgname = "log.jpg";
         break;}
     case NEGATIVO:
-        negative(einstein);
+        saved = negative(einstein);
+        imgpath = "../images/neg.jpg";
+        imgname = "neg.jpg";
         break;
     case GAMMA:{
         read = w->getText();
         auto dataGamma = parseGamma(read);
-        gammaC(einstein, dataGamma.first, dataGamma.second);
+        saved = gammaC(einstein, dataGamma.first, dataGamma.second);
+        imgpath = "../images/gamma.jpg";
+        imgname = "gamma.jpg";
         break;}
     case ESCANOGRAFIA:{
         read = w->getText();
         auto dataScanography = parseScan(read);
         scanimg = scanographyWrite(einstein, dataScanography);
+        saved = scanimg;
+        imgpath = "../images/scan.jpg";
+        imgname = "scan.jpg";
         break;
     }
     case KERNEL:{
         read = w->getText();
         auto dataKernel = parseKernel(read);
         auto matsize = dataKernel.second;
-        appKernel(einstein, dataKernel.first, matsize);
+        saved = appKernel(einstein, dataKernel.first, matsize);
+        imgpath = "../images/kernel.jpg";
+        imgname = "kernel.jpg";
         break;
     }
     case FOURIER:{
         Mat ajuste;
+        MatHsv original(einstein);
+        if(einstein.channels() == 3){
+            einstein = returnGray(einstein);
+        }
         int m = getOptimalDFTSize(einstein.rows);
         int n = getOptimalDFTSize(einstein.cols);
         copyMakeBorder(einstein, ajuste, 0, m - einstein.rows, 0, n - einstein.cols, BORDER_CONSTANT, Scalar::all(0));
@@ -178,38 +202,70 @@ void MainWindow::on_Set_clicked()
         break;
     }
     case NEGATIVOHSV:
-        Vnegative(einstein);
+        saved = Vnegative(einstein);
+        imgpath = "../images/hsvneg.jpg";
+        imgname = "hsvneg.jpg";
         break;
     case GRAYSCALE:
-        grayscale(einstein);
+        saved = grayscale(einstein);
+        imgpath = "../images/grayscale.jpg";
+        imgname = "grayscale.jpg";
         break;
     case COLORS:
     {
         std::vector<float> values = w->retrieveBars();
         HSVcell cor(values[0], values[1], values[2]);
-        colorFilterHSV(einstein, cor);
+        saved = colorFilterHSV(einstein, cor);
+        imgpath = "../images/hsv.jpg";
+        imgname = "hsv.jpg";
+        break;
     }
     case CMY:{
         std::vector<float> values = w->retrieveBars();
         if(adjustRGB){
-            colorFilterRGB(einstein, values);
+            saved = colorFilterRGB(einstein, values);
+            imgpath = "../images/rgb.jpg";
+            imgname = "rgb.jpg";
         }
         else{
-            colorFilterCMY(einstein, values);
+            saved = colorFilterCMY(einstein, values);
+            imgpath = "../images/cmy.jpg";
+            imgname = "cmy.jpg";
         }
+        break;
     }
     case SEPIA_CHROMA:{
         if(setChroma){
             std::string secondPath = "../images/";
             secondPath = secondPath + w->retrieveSecondFile();
             Mat secondImg = imread(secondPath);
-            applyChromaKey(einstein, w->retrieveDist(), secondImg);
+            saved = applyChromaKey(einstein, w->retrieveDist(), secondImg);
+            imgpath = "../images/chromakey.jpg";
+            imgname = "chromakey.jpg";
         }
         else{
-            applySepia(einstein);
+            saved = applySepia(einstein);
+            imgpath = "../images/sepia.jpg";
+            imgname = "sepia.jpg";
         }
+        break;
+    }
+    case HISTOGRAMA:{
+        if(histEq){
+            Mat equalized(HistogramEqualization(einstein));
+            saveImage("../images/equalized.jpg", equalized);
+            showHistogram("../images/equalized.jpg");
+            imgpath = "../images/equalized.jpg";
+            imgname = "equalized.jpg";
+        }
+        else{
+            showHistogram(imgpath);
+        }
+        break;
     }
     }
+    saveImage(imgpath, saved);
+    w->setPath(imgname);
 }
 
 void MainWindow::on_Clear_clicked()
@@ -275,8 +331,6 @@ void MainWindow::on_ShowFourier_clicked()
     Mat inversa;
     dft(operando, inversa, DFT_INVERSE|DFT_REAL_OUTPUT);
 
-    inversa = inversa(Rect(0, 0, inversa.cols & -2, inversa.rows & -2));
-
     Mat final;
     inversa.convertTo(final, CV_8UC1);
 
@@ -296,6 +350,10 @@ int main(int argc, char *argv[])
     w->ToggleBars(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleDist(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleSobel(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleBoost(HIDE);
     window.show();
     return a.exec();
 }
@@ -332,13 +390,77 @@ void MainWindow::on_checkChroma_stateChanged(int arg1)
     }
 }
 
+void MainWindow::on_histogramaEq_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        histEq = true;
+    }
+    else{
+        histEq = false;
+    }
+}
+
+void MainWindow::on_histogramaHSV_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        histHSV = true;
+    }
+    else{
+        histHSV = false;
+    }
+}
+
+void MainWindow::on_sobelY_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        sobY = true;
+    }
+    else{
+        sobY = false;
+    }
+}
+
+void MainWindow::on_sobelX_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        sobX = true;
+    }
+    else{
+        sobX = false;
+    }
+}
+
+void MainWindow::on_mediaPond_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        pond = true;
+    }
+    else{
+        pond = false;
+    }
+}
+
+void MainWindow::on_highBoost_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        isHB = true;
+    }
+    else{
+        isHB = false;
+    }
+}
+
 void MainWindow::on_Limiarizacao_clicked()
 {
     algoritmo = LIMIARIZACAO;
     w->ToggleText(HIDE);
     w->ToggleDist(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleSobel(HIDE);
+    w->TogglePond(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleHist(HIDE);
     w->ToggleChroma(HIDE);
     LimpaLimiarizacao();
     w->ToggleGraphics(SHOW);
@@ -351,6 +473,10 @@ void MainWindow::on_Logaritmo_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleHist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleDist(HIDE);
     w->ToggleChroma(HIDE);
     w->setTextualPlaceholder(templateAlg[LOGARITMO]);
@@ -364,7 +490,11 @@ void MainWindow::on_Negativo_clicked()
     algoritmo = NEGATIVO;
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleText(HIDE);
@@ -377,6 +507,10 @@ void MainWindow::on_Gamma_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleDist(HIDE);
+    w->ToggleHist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[GAMMA]);
@@ -389,7 +523,11 @@ void MainWindow::on_Escanografia_clicked()
     algoritmo = ESCANOGRAFIA;
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[ESCANOGRAFIA]);
@@ -403,6 +541,10 @@ void MainWindow::on_Kernel_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleFourierTools(HIDE);
     w->setTextualPlaceholder(templateAlg[KERNEL]);
@@ -415,9 +557,13 @@ void MainWindow::on_Fourier_clicked()
     algoritmo = FOURIER;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleFourierTools(SHOW);
     w->ToggleGraphics(SHOW);
 }
@@ -427,7 +573,11 @@ void MainWindow::on_Sobel_clicked()
     algoritmo = SOBEL;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleSobel(SHOW);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -438,8 +588,12 @@ void MainWindow::on_NegativoHSV_clicked()
     algoritmo = NEGATIVOHSV;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleDist(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleBoost(HIDE);
+    w->TogglePond(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -451,7 +605,11 @@ void MainWindow::on_Grayscale_clicked()
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
     w->ToggleDist(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleHist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -464,6 +622,10 @@ void MainWindow::on_Colors_clicked()
     w->ToggleText(HIDE);
     w->ToggleBars(SHOW);
     w->ToggleDist(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleHist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -475,7 +637,11 @@ void MainWindow::on_adjustCMY_clicked()
     algoritmo = CMY;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleHist(HIDE);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleBars(SHOW);
     w->ToggleGraphics(HIDE);
@@ -488,10 +654,77 @@ void MainWindow::on_sep_chrom_clicked()
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
     w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleSobel(HIDE);
     w->ToggleChroma(SHOW);
     w->ToggleBars(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }
 
+void MainWindow::on_Histograma_clicked()
+{
+    algoritmo = HISTOGRAMA;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(SHOW);
+    w->ToggleBoost(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_radioButton_8_clicked()
+{
+    algoritmo = MEDIA;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->TogglePond(SHOW);
+    w->ToggleHist(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_radioButton_13_clicked()
+{
+    algoritmo = MEDIANA;
+    LimpaLimiarizacao();
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleBoost(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_Laplacian_clicked()
+{
+    algoritmo = LAPLACIAN;
+    LimpaLimiarizacao();
+    w->ToggleBoost(SHOW);
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
 

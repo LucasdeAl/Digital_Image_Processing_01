@@ -66,17 +66,17 @@ std::string scanographyRead(Mat image);
 
 cv::Mat scanographyWrite(Mat image,string p);
 
-void logarithm(Mat image, double base, double c, bool isNormalized);
+Mat logarithm(Mat image, double base, double c, bool isNormalized);
 
-void negative(Mat image);
+Mat negative(Mat image);
 
-void gammaC(Mat image,double c,double gamma);
+Mat gammaC(Mat image,double c,double gamma);
 
 
 std::vector<std::pair<float, float>> equacionaRetas(std::vector<std::pair<float, float>> buffer);
 
 
-void limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image);
+Mat limiarizacaoPorPartes(std::vector<std::pair<float, float>> buffer, std::vector<std::pair<float, float>> equacoes, Mat image);
 
 double converteDigito(char c);
 
@@ -90,21 +90,23 @@ std::pair<double, double> parseGamma(std::string s);
 
 std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s);
 
-void appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize);
+Mat appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize);
 
 //----------------------------------------------------------------------------------------------------------------------
 //ALGORITMOS EM HSV
 
-void Vnegative(Mat image);
+Mat Vnegative(Mat image);
 
-void grayscale(Mat image);
+Mat grayscale(Mat image);
 
-void colorFilterHSV(Mat image, HSVcell color);
+Mat colorFilterHSV(Mat image, HSVcell color);
 
-void colorFilterRGB(Mat image, std::vector<float> color);
+Mat colorFilterRGB(Mat image, std::vector<float> color);
 
-void colorFilterCMY(Mat image, std::vector<float> rgbco);
+Mat colorFilterCMY(Mat image, std::vector<float> rgbco);
 
-void applyChromaKey(Mat image, float dist, Mat secondImg);
+Mat applyChromaKey(Mat image, float dist, Mat secondImg);
 
-void applySepia(Mat image);
+Mat applySepia(Mat image);
+
+Mat returnGray(Mat image);
