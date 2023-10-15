@@ -201,7 +201,7 @@ int showHistogram(string path)
     {
     return EXIT_FAILURE;
     }
-        vector<Mat> bgr_planes;
+    vector<Mat> bgr_planes;
     split( src, bgr_planes );
     int histSize = 256;
     float range[] = { 0, 256 }; //the upper boundary is exclusive
@@ -214,9 +214,11 @@ int showHistogram(string path)
     int hist_w = 512, hist_h = 400;
     int bin_w = cvRound( (double) hist_w/histSize );
     Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+    
     normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
     normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
     normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+
     for( int i = 1; i < histSize; i++ )
     {
     line( histImage, Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ),
@@ -231,6 +233,65 @@ int showHistogram(string path)
     }
     imshow("Source image", src );
     imshow("calcHist Demo", histImage );
+    waitKey();
+    return EXIT_SUCCESS;
+}
+
+int showHistogramHSV(string path)
+{
+    Mat src = imread(path);
+    if (src.empty())
+    {
+        return EXIT_FAILURE;
+    }
+
+    MatHsv image(src);
+
+    std::vector<std::vector<HSVcell>> hsvData = image.data;
+    std::vector<float> vValues;
+
+    for (int i = 0; i < hsvData.size(); i++)
+    {
+        for (int j = 0; j < hsvData[i].size(); j++)
+        {
+            vValues.push_back(hsvData[i][j].v);
+        }
+    }
+
+    int histSize = 256;
+    float range[] = { 0, 256 }; 
+    const float* histRange[] = { range };
+    bool uniform = true, accumulate = false;
+    Mat v_hist;
+    float max =0;
+    for(float value: vValues)
+    {
+        if(value>max) max = value;
+    }
+    std::vector<uint8_t> vValuesUint8;
+    for (size_t i = 0; i < vValues.size(); i++) {
+        uint8_t normalizedValue = static_cast<uint8_t>((vValues[i] / max) * 255.0);
+        vValuesUint8.push_back(normalizedValue);
+    }
+
+    cv::Mat vValuesMat(vValuesUint8); 
+
+    calcHist(&vValuesMat, 1, 0, Mat(), v_hist, 1, &histSize, histRange, uniform, accumulate);
+
+    int hist_w = 512, hist_h = 400;
+    int bin_w = cvRound((double)hist_w / histSize);
+    Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+    normalize(v_hist, v_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+
+    for (int i = 1; i < histSize; i++)
+    {
+        line(histImage, Point(bin_w * (i - 1), hist_h - cvRound(v_hist.at<float>(i - 1))),
+             Point(bin_w * i, hist_h - cvRound(v_hist.at<float>(i))),
+             Scalar(255, 255, 255), 2, 8, 0); 
+    }
+
+    imshow("Source image", src);
+    imshow("Histogram of V Component", histImage);
     waitKey();
     return EXIT_SUCCESS;
 }
@@ -1474,10 +1535,10 @@ void rotate(cv::Mat image, double degrees) {
             if (x >= 0 && x < image.cols && y >= 0 && y < image.rows) {
                 if (cn > 1) {
                     for (int ch = 0; ch < 3; ch++) {
-                       applied.at<cv::Vec3b>(j, i)[ch] = image.at<cv::Vec3b>(static_cast<int>(y), static_cast<int>(x))[ch];
+                         applied.at<cv::Vec3b>(j, i)[ch] = image.at<cv::Vec3b>(y, x)[ch];
                     }
                 } else {
-                    applied.at<uchar>(j, i) = image.at<uchar>(static_cast<int>(y), static_cast<int>(x));
+                    applied.at<uint8_t>(j, i) =  image.at<uint8_t>(y, x);
                 }
             }
         }
@@ -1646,7 +1707,7 @@ void grayscale(Mat image){
     waitKey();
 }
 
-void colorFilterHSV(Mat image, HSVcell color){
+void colorFilter(Mat image, HSVcell color){
     MatHsv a(image);
     float huep = color.h/(2*Pi);
     for(int i = 0; i < a.data.size(); i++){
@@ -1657,127 +1718,5 @@ void colorFilterHSV(Mat image, HSVcell color){
             }
     }
     cv::Mat result(a.toRGB());
-    imshow("Imagem com ajuste HSV", result);
-    waitKey();
-}
-
-void colorFilterRGB(Mat image, std::vector<float> rgbco){
-    Mat adjusted = Mat(image.rows, image.cols, CV_8UC3);
-    uint8_t* pixelImagePtr;
-    uint8_t* pixelAdjustedPtr;
-    pixelImagePtr = (uint8_t*)image.data;
-    pixelAdjustedPtr = (uint8_t*)adjusted.data;
-    int cn = image.channels();
-    rgbco[0] /= 2*Pi;
-    for(int i = 0; i < image.rows; i++)
-    {
-        for(int j = 0; j < image.cols; j++)
-        {
-            for( int k = 0 ; k < 3; k++){
-                    if(cn == 1){
-                        pixelAdjustedPtr[i*adjusted.cols + j + k] = pixelImagePtr[i*image.cols + j] * rgbco[2-k];
-                    }
-                    else{
-                        pixelAdjustedPtr[i*adjusted.cols*cn + j*cn + k] = pixelImagePtr[i*image.cols*cn + j*cn + k] * rgbco[2-k];
-                    }
-            }
-        }
-    }
-
-    imshow("Imagem com ajuste RGB", adjusted);
-    waitKey();
-}
-
-void colorFilterCMY(Mat image, std::vector<float> rgbco){
-    Mat adjusted = Mat(image.rows, image.cols, CV_8UC3);
-    uint8_t* pixelImagePtr;
-    uint8_t* pixelAdjustedPtr;
-    pixelImagePtr = (uint8_t*)image.data;
-    pixelAdjustedPtr = (uint8_t*)adjusted.data;
-    int cn = image.channels();
-    rgbco[0] /= 2*Pi;
-    for(int i = 0; i < image.rows; i++)
-    {
-        for(int j = 0; j < image.cols; j++)
-        {
-            for( int k = 0 ; k < 3; k++){
-                    if(cn == 1){
-                        pixelAdjustedPtr[i*adjusted.cols + j + k] = pixelImagePtr[i*image.cols + j] * (1.0 - rgbco[2-k]);
-                    }
-                    else{
-                        pixelAdjustedPtr[i*adjusted.cols*cn + j*cn + k] = pixelImagePtr[i*image.cols*cn + j*cn + k] * (1.0 - rgbco[2-k]);
-                    }
-            }
-        }
-    }
-
-    imshow("Imagem com ajuste CMY", adjusted);
-    waitKey();
-}
-
-void applyChromaKey(Mat image, float dist, Mat secondImg){
-    Mat applied = Mat(image.rows, image.cols, CV_8UC3);
-    uint8_t* pixelImagePtr;
-    uint8_t* secondImagePtr;
-    uint8_t* appliedPtr;
-    pixelImagePtr = (uint8_t *) image.data;
-    secondImagePtr = (uint8_t *) secondImg.data;
-    appliedPtr = (uint8_t *) applied.data;
-    if(image.channels() == 1){
-        return;
-    }
-    else{
-        int cn = 3;
-        for(int i = 0; i < image.rows; i++)
-        {
-            for(int j = 0; j < image.cols; j++)
-            {
-                    unsigned int actual = i*image.cols*cn + j*cn;
-                    float r = pixelImagePtr[actual];
-                    float g = pixelImagePtr[actual + 1];
-                    float b = pixelImagePtr[actual + 2];
-                    float gf = 255 - g;
-                    float distx = sqrt(r*r + gf*gf + b*b);
-                    if(distx > dist){
-                        appliedPtr[actual] = r;
-                        appliedPtr[actual + 1] = g;
-                        appliedPtr[actual + 2] = b;
-                    }
-                    else{
-                        unsigned int actualp = i*secondImg.cols*cn + j*cn;
-                        if(actual >= secondImg.rows * secondImg.cols * cn){
-                            actualp = actual%secondImg.rows * secondImg.cols * cn;
-                        }
-                        appliedPtr[actual] = secondImagePtr[actualp];
-                        appliedPtr[actual + 1] = secondImagePtr[actualp + 1];
-                        appliedPtr[actual + 2] = secondImagePtr[actualp + 2];
-                    }
-            }
-        }
-
-        imshow("Imagem com Chroma Key", applied);
-        waitKey();
-    }
-}
-
-#define isPlus(a, b) ((a>=b)?-1:1)
-
-void applySepia(Mat image){
-    MatHsv a(image);
-    for(int i = 0; i < a.data.size(); i++){
-        for(int j = 0; j < a.data[0].size(); j++){
-            float dist = abs(a.data[i][j].h - Pi);
-            a.data[i][j].h += isPlus(a.data[i][j].h, Pi) * dist * 0.8;
-            if(a.data[i][j].h < 0){
-                    a.data[i][j].h += 2*Pi;
-            }
-            else if (a.data[i][j].h >= 2*Pi){
-                    a.data[i][j].h -= 2*Pi;
-            }
-            a.data[i][j].s = 0.2;
-        }
-    }
-    Mat applied = a.toRGB();
-    imshow("Aplicacao do Sepia", applied);
-    waitKey();
+    imshow("Imagem com filtro de cor", result);
 }
