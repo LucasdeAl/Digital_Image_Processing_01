@@ -47,6 +47,9 @@ public:
     void setPath(std::string path);
     void TogglePond(int v);
     void ToggleBoost(int v);
+    double retrieveBoost();
+    void ToggleTransform(int v);
+    double retrieveTransQ();
     ~MainWindow();
 
 private slots:
@@ -107,6 +110,14 @@ private slots:
     void on_radioButton_13_clicked();
 
     void on_Laplacian_clicked();
+
+    void on_highBoost_stateChanged(int arg1);
+
+    void on_Transforms_clicked();
+
+    void on_rotCheck_stateChanged(int arg1);
+
+    void on_bilinCheck_stateChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;

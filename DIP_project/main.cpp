@@ -14,7 +14,11 @@ const char* templateAlg[] ={"",
     "",
     "TEMPLATE: c num, gamma num;\n\nCLEAR - LIMPA TEXTO",
     "TEMPLATE: msg;\n\nSET - ESCREVE NA IMAGEM\n\nCLEAR - LIMPA O BLOCO DE TEXTO E LÊ DA IMAGEM",
-    "TEMPLATE: tam (lin, col), [l1c1, l1c2, ... l1cn, l2c1, ... lmcn]\n\nSET - APLICA KERNEL NA IMAGEM"};
+    "TEMPLATE: tam (lin, col), [l1c1, l1c2, ... l1cn, l2c1, ... lmcn]\n\nSET - APLICA KERNEL NA IMAGEM",
+    "",
+    "",
+    "TEMPLATE: tam (lin, col), [l1c1, l1c2, ... l1cn, l2c1, ... lmcn]\n\nSET - APLICA A MEDIA\n\nSE FOR USAR MEDIA ARITMETICA, PONHA APENAS OS TAMANHOS SEGUIDOS DE ';'",
+    "TEMPLATE: tam (lin, col);\n\nSET - APLICA A MEDIANA"};
 
 Algorithms algoritmo = NONE;
 
@@ -31,6 +35,7 @@ bool histEq = false;
 bool sobX = false, sobY = false;
 bool pond = false;
 bool isHB = false;
+bool isRot = false, isBilin = false;
 QImage trans;
 
 void LimpaLimiarizacao(){
@@ -97,7 +102,6 @@ void MainWindow::on_Set_clicked()
     std::string imgname = "../images/";
     std::string imgpath = imgname + w->getName();
     Mat einstein = imread(imgpath, IMREAD_UNCHANGED);
-    std::cout << einstein.channels() << std::endl;
     Mat saved = Mat(einstein);
     if (einstein.empty())
     {
@@ -135,8 +139,7 @@ void MainWindow::on_Set_clicked()
     case ESCANOGRAFIA:{
         read = w->getText();
         auto dataScanography = parseScan(read);
-        scanimg = scanographyWrite(einstein, dataScanography);
-        saved = scanimg;
+        saved = scanographyWrite(einstein, dataScanography);
         imgpath = "../images/scan.jpg";
         imgname = "scan.jpg";
         break;
@@ -194,11 +197,76 @@ void MainWindow::on_Set_clicked()
         break;
     }
     case SOBEL:{
-        MatHsv teste(einstein);
-        Mat testeb = teste.toRGB();
-        std::cout << testeb.channels() << std::endl;
-        imshow("teste", testeb);
-        waitKey();
+        if(sobX && sobY){
+            saved = appKernelSobelMagnitude(einstein);
+            imgpath = "../images/sobelmag.jpg";
+            imgname = "sobelmag.jpg";
+        } else if(sobX){
+            saved = appKernelSobelX(einstein);
+            imgpath = "../images/sobelx.jpg";
+            imgname = "sobelx.jpg";
+        } else{
+            saved = appKernelSobelY(einstein);
+            imgpath = "../images/sobely.jpg";
+            imgname = "sobely.jpg";
+        }
+        break;
+    }
+    case MEDIA:{
+        if(pond){
+            auto info = parseKernel(w->getText());
+            saved = appKernelWeightedMean(einstein, info.first, info.second);
+            imgpath = "../images/ponderada.jpg";
+            imgname = "ponderada.jpg";
+        }else{
+            auto info = parseKernelSize(w->getText());
+            saved = appKernelSimpleMean(einstein, info);
+            imgpath = "../images/media.jpg";
+            imgname = "media.jpg";
+        }
+        break;
+    }
+    case MEDIANA:{
+        auto info = parseKernelSize(w->getText());
+        saved = appKernelMedian(einstein, info);
+        imgpath = "../images/mediana.jpg";
+        imgname = "mediana.jpg";
+        break;
+    }
+    case TRANSFORMS:{
+        if(isRot){
+            if(isBilin){
+                saved = rotateBilinear(einstein, (w->retrieveTransQ()/5)*360);
+                imgpath = "../images/rotbilin.jpg";
+                imgname = "rotbilin.jpg";
+            } else{
+                saved = rotate(einstein, (w->retrieveTransQ()/5)*360);
+                imgpath = "../images/rot.jpg";
+                imgname = "rot.jpg";
+            }
+        } else{
+            if(isBilin){
+                saved = changeScaleBilinear(einstein, w->retrieveTransQ());
+                imgpath = "../images/scalebilin.jpg";
+                imgname = "scalebilin.jpg";
+            } else{
+                saved = changeScale(einstein, w->retrieveTransQ());
+                imgpath = "../images/scale.jpg";
+                imgname = "scale.jpg";
+            }
+        }
+        break;
+    }
+    case LAPLACIAN:{
+        if(isHB){
+            saved = appKernelHighBoost(einstein, w->retrieveBoost());
+            imgpath = "../images/highboost.jpg";
+            imgname = "highboost.jpg";
+        } else{
+            saved = appKernelLaplacian(einstein);
+            imgpath = "../images/laplacian.jpg";
+            imgname = "laplacian.jpg";
+        }
         break;
     }
     case NEGATIVOHSV:
@@ -264,8 +332,10 @@ void MainWindow::on_Set_clicked()
         break;
     }
     }
-    saveImage(imgpath, saved);
-    w->setPath(imgname);
+    if(algoritmo != FOURIER){
+        saveImage(imgpath, saved);
+        w->setPath(imgname);
+    }
 }
 
 void MainWindow::on_Clear_clicked()
@@ -283,6 +353,7 @@ void MainWindow::on_Clear_clicked()
     case ESCANOGRAFIA:{
         if(scanimg.size() != cv::Size(1, 1)){
             w->clearText();
+            Mat scanimg = imread("../images/scan.jpg", IMREAD_UNCHANGED);
             std::string aux = std::string("Mensagem Lida: ") + scanographyRead(scanimg);
             const char *c = aux.c_str();
             w->setTextualPlaceholder(c);
@@ -334,9 +405,11 @@ void MainWindow::on_ShowFourier_clicked()
     Mat final;
     inversa.convertTo(final, CV_8UC1);
 
-    imshow("bananas", final);
+    imshow("Transformada Inversa", final);
     waitKey();
-
+    destroyWindow("Transformada Inversa");
+    saveImage("../images/ift.jpg", final);
+    setPath("ift.jpg");
 }
 
 int main(int argc, char *argv[])
@@ -354,6 +427,7 @@ int main(int argc, char *argv[])
     w->ToggleSobel(HIDE);
     w->TogglePond(HIDE);
     w->ToggleBoost(HIDE);
+    w->ToggleTransform(HIDE);
     window.show();
     return a.exec();
 }
@@ -450,12 +524,33 @@ void MainWindow::on_highBoost_stateChanged(int arg1)
     }
 }
 
+void MainWindow::on_rotCheck_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        isRot = true;
+    }
+    else{
+        isRot = false;
+    }
+}
+
+void MainWindow::on_bilinCheck_stateChanged(int arg1)
+{
+    if(arg1 == 2){
+        isBilin = true;
+    }
+    else{
+        isBilin = false;
+    }
+}
+
 void MainWindow::on_Limiarizacao_clicked()
 {
     algoritmo = LIMIARIZACAO;
     w->ToggleText(HIDE);
     w->ToggleDist(HIDE);
     w->ToggleBoost(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleSobel(HIDE);
     w->TogglePond(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -473,6 +568,7 @@ void MainWindow::on_Logaritmo_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleBoost(HIDE);
     w->ToggleHist(HIDE);
     w->TogglePond(HIDE);
@@ -489,6 +585,7 @@ void MainWindow::on_Negativo_clicked()
 {
     algoritmo = NEGATIVO;
     w->ToggleGraphics(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleHist(HIDE);
     w->ToggleBoost(HIDE);
@@ -509,6 +606,7 @@ void MainWindow::on_Gamma_clicked()
     w->ToggleDist(HIDE);
     w->ToggleHist(HIDE);
     w->TogglePond(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleBoost(HIDE);
     w->ToggleSobel(HIDE);
     w->ToggleChroma(HIDE);
@@ -524,6 +622,7 @@ void MainWindow::on_Escanografia_clicked()
     w->ToggleGraphics(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleSobel(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleDist(HIDE);
     w->TogglePond(HIDE);
     w->ToggleHist(HIDE);
@@ -542,6 +641,7 @@ void MainWindow::on_Kernel_clicked()
     w->ToggleBars(HIDE);
     w->ToggleDist(HIDE);
     w->TogglePond(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleSobel(HIDE);
     w->ToggleHist(HIDE);
     w->ToggleBoost(HIDE);
@@ -558,6 +658,7 @@ void MainWindow::on_Fourier_clicked()
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
     w->ToggleSobel(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleDist(HIDE);
     w->TogglePond(HIDE);
     w->ToggleHist(HIDE);
@@ -573,6 +674,7 @@ void MainWindow::on_Sobel_clicked()
     algoritmo = SOBEL;
     LimpaLimiarizacao();
     w->ToggleText(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleSobel(SHOW);
     w->ToggleDist(HIDE);
     w->TogglePond(HIDE);
@@ -590,6 +692,7 @@ void MainWindow::on_NegativoHSV_clicked()
     w->ToggleText(HIDE);
     w->ToggleSobel(HIDE);
     w->ToggleBars(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleDist(HIDE);
     w->ToggleHist(HIDE);
     w->ToggleBoost(HIDE);
@@ -611,6 +714,7 @@ void MainWindow::on_Grayscale_clicked()
     w->TogglePond(HIDE);
     w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
 }
@@ -627,6 +731,7 @@ void MainWindow::on_Colors_clicked()
     w->TogglePond(HIDE);
     w->ToggleBoost(HIDE);
     w->ToggleChroma(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
     w->hideRGBCheck();
@@ -643,6 +748,7 @@ void MainWindow::on_adjustCMY_clicked()
     w->ToggleBoost(HIDE);
     w->ToggleSobel(HIDE);
     w->ToggleChroma(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleBars(SHOW);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -659,6 +765,7 @@ void MainWindow::on_sep_chrom_clicked()
     w->ToggleHist(HIDE);
     w->ToggleSobel(HIDE);
     w->ToggleChroma(SHOW);
+    w->ToggleTransform(HIDE);
     w->ToggleBars(HIDE);
     w->ToggleGraphics(HIDE);
     w->ToggleFourierTools(HIDE);
@@ -673,6 +780,7 @@ void MainWindow::on_Histograma_clicked()
     w->TogglePond(HIDE);
     w->ToggleHist(SHOW);
     w->ToggleBoost(HIDE);
+    w->ToggleTransform(HIDE);
     w->ToggleSobel(HIDE);
     w->ToggleChroma(HIDE);
     w->ToggleBars(HIDE);
@@ -684,7 +792,9 @@ void MainWindow::on_radioButton_8_clicked()
 {
     algoritmo = MEDIA;
     LimpaLimiarizacao();
-    w->ToggleText(HIDE);
+    w->ToggleText(SHOW);
+    w->setTextualPlaceholder(templateAlg[MEDIA]);
+    w->ToggleTransform(HIDE);
     w->ToggleDist(HIDE);
     w->TogglePond(SHOW);
     w->ToggleHist(HIDE);
@@ -700,7 +810,9 @@ void MainWindow::on_radioButton_13_clicked()
 {
     algoritmo = MEDIANA;
     LimpaLimiarizacao();
-    w->ToggleText(HIDE);
+    w->ToggleTransform(HIDE);
+    w->ToggleText(SHOW);
+    w->setTextualPlaceholder(templateAlg[MEDIANA]);
     w->ToggleDist(HIDE);
     w->TogglePond(HIDE);
     w->ToggleHist(HIDE);
@@ -717,6 +829,24 @@ void MainWindow::on_Laplacian_clicked()
     algoritmo = LAPLACIAN;
     LimpaLimiarizacao();
     w->ToggleBoost(SHOW);
+    w->ToggleText(HIDE);
+    w->ToggleDist(HIDE);
+    w->ToggleTransform(HIDE);
+    w->TogglePond(HIDE);
+    w->ToggleHist(HIDE);
+    w->ToggleSobel(HIDE);
+    w->ToggleChroma(HIDE);
+    w->ToggleBars(HIDE);
+    w->ToggleGraphics(HIDE);
+    w->ToggleFourierTools(HIDE);
+}
+
+void MainWindow::on_Transforms_clicked()
+{
+    algoritmo = TRANSFORMS;
+    LimpaLimiarizacao();
+    w->ToggleTransform(SHOW);
+    w->ToggleBoost(HIDE);
     w->ToggleText(HIDE);
     w->ToggleDist(HIDE);
     w->TogglePond(HIDE);
