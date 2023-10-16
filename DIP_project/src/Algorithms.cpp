@@ -920,6 +920,39 @@ std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s){
     }
 }
 
+std::pair<int, int> parseKernelSize(std::string s){
+    int l = 0, c = 0, *p = new int(0);
+    try{
+        if(s.substr(0, 5).compare("tam (") == 0){
+            l = parseNumber(5, s, p);
+            if(s[*p] == ','){
+                c = parseNumber(*p + 1, s, p);
+                if(s.substr(*p, 2).compare(");") == 0){
+                    return std::pair<int, int>(l, c);
+                }
+                else{
+                    throw "Terminação errada!";
+                }
+            }
+            else{
+                throw "Faltou o valor do segundo tamanho! (Não coloque espaços antes da vírgula, só depois)";
+            }
+        }
+        else{
+            throw "Formatação errada do input, por favor seguir a template!";
+        }
+    }
+    catch(const char* err){
+        delete p;
+        std::cout << err << std::endl;
+        return std::pair<int, int>(l, c);
+    }
+    catch(std::invalid_argument e){
+        std::cout << "Não foi encontrado um número para um dos parâmetros!" << std::endl;
+            return std::pair<int, int>(l, c);
+    }
+}
+
 Mat appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
     Mat applied = image.clone();
     uint8_t* pixelImagePtr;
@@ -967,7 +1000,7 @@ Mat appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
 
 
 
-void appKernelSimpleMean(Mat image, std::pair<int, int> msize){
+Mat appKernelSimpleMean(Mat image, std::pair<int, int> msize){
     int lin = msize.first, col = msize.second;
     double size = lin*col;
     std::vector<double> kernel(size,1); 
@@ -1011,10 +1044,12 @@ void appKernelSimpleMean(Mat image, std::pair<int, int> msize){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
 
-void appKernelWeightedMean(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
+Mat appKernelWeightedMean(Mat image, std::vector<double> kernel, std::pair<int, int> msize){
     int lin = msize.first, col = msize.second;
     Mat applied = image.clone();
     uint8_t* pixelImagePtr;
@@ -1057,9 +1092,11 @@ void appKernelWeightedMean(Mat image, std::vector<double> kernel, std::pair<int,
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
-void appKernelMedian(Mat image, std::pair<int, int> msize){
+Mat appKernelMedian(Mat image, std::pair<int, int> msize){
     std::vector<double> kernel;
     int tam = msize.first*msize.second;
     kernel.assign(tam,1);
@@ -1103,8 +1140,10 @@ void appKernelMedian(Mat image, std::pair<int, int> msize){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
-void appKernelSobelMagnitude(Mat image){
+Mat appKernelSobelMagnitude(Mat image){
     std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
     std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
     Mat applied = image.clone();
@@ -1180,11 +1219,13 @@ void appKernelSobelMagnitude(Mat image){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
 
 
-void appKernelSobelX(Mat image){
+Mat appKernelSobelX(Mat image){
     std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
     //std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
     Mat applied = image.clone();
@@ -1288,9 +1329,11 @@ void appKernelSobelX(Mat image){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
-void appKernelSobelY(Mat image){
+Mat appKernelSobelY(Mat image){
     //std::vector<double> gx = {-1,0,1,-2,0,2,-1,0,1};
     std::vector<double> gy = {1,2,1,0,0,0,-1,-2,-1};
     Mat applied = image.clone();
@@ -1394,9 +1437,11 @@ void appKernelSobelY(Mat image){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
-void appKernelLaplacian(Mat image){
+Mat appKernelLaplacian(Mat image){
     std::vector<double> gy = {1,1,1,1,-8,1,1,1,1};
     Mat applied = image.clone();
     uint8_t* pixelImagePtr;
@@ -1440,10 +1485,12 @@ void appKernelLaplacian(Mat image){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
 
-void appKernelHighBoost(Mat image,double f){
+Mat appKernelHighBoost(Mat image,double f){
     std::vector<double> gy = {1,2,1,2,4,2,1,2,1};
     Mat applied = image.clone();
     uint8_t* pixelImagePtr;
@@ -1489,9 +1536,11 @@ void appKernelHighBoost(Mat image,double f){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
-void changeScale(Mat image,double scale){
+Mat changeScale(Mat image,double scale){
     int newX = image.rows*scale;
     int newY = image.cols*scale;
     int cn = image.channels();
@@ -1524,10 +1573,12 @@ void changeScale(Mat image,double scale){
     waitKey(0);
 
     destroyWindow(windowName);
+
+    return applied;
 }
 
 
-void changeScaleBilinear(Mat image, double scale) {
+Mat changeScaleBilinear(Mat image, double scale) {
     int newX = static_cast<int>(image.rows * scale);
     int newY = static_cast<int>(image.cols * scale);
     int cn = image.channels();
@@ -1603,9 +1654,11 @@ void changeScaleBilinear(Mat image, double scale) {
     waitKey(0);
 
     destroyWindow(windowName);
-    }
 
-void rotate(cv::Mat image, double degrees) {
+    return applied;
+}
+
+Mat rotate(cv::Mat image, double degrees) {
     double rads = (-Pi / 180) * degrees;
     double diag = sqrt(image.rows * image.rows + image.cols * image.cols);
     int newX = static_cast<int>(ceil(diag));
@@ -1641,10 +1694,12 @@ void rotate(cv::Mat image, double degrees) {
     cv::imshow(windowName, applied);
     cv::waitKey(0);
     cv::destroyWindow(windowName);
+
+    return applied;
 }
 
 
-void rotateBilinear(cv::Mat image, double degrees) {
+Mat rotateBilinear(cv::Mat image, double degrees) {
     double rads = (-Pi / 180) * degrees;
     double diag = sqrt(image.rows * image.rows + image.cols * image.cols);
     int newX = static_cast<int>(ceil(diag));
@@ -1758,6 +1813,8 @@ void rotateBilinear(cv::Mat image, double degrees) {
     cv::imshow(windowName, applied);
     cv::waitKey(0);
     cv::destroyWindow(windowName);
+
+    return applied;
 }
 
 
@@ -1784,6 +1841,7 @@ Mat Vnegative(Mat image){
     cv::Mat result(a.toRGB());
     imshow("Negativo em HSV", result);
     waitKey();
+    destroyWindow("Negativo em HSV");
     return result;
 }
 
@@ -1798,6 +1856,7 @@ Mat grayscale(Mat image){
     cv::Mat result(a.toRGB());
     imshow("Escala de Cinza", result);
     waitKey();
+    destroyWindow("Escala de Cinza");
     return result;
 }
 
@@ -1814,6 +1873,7 @@ Mat colorFilterHSV(Mat image, HSVcell color){
     cv::Mat result(a.toRGB());
     imshow("Imagem com ajuste HSV", result);
     waitKey();
+    destroyWindow("Imagem com ajuste HSV");
     return result;
 }
 
@@ -1842,6 +1902,7 @@ Mat colorFilterRGB(Mat image, std::vector<float> rgbco){
 
     imshow("Imagem com ajuste RGB", adjusted);
     waitKey();
+    destroyWindow("Imagem com ajuste RGB");
     return adjusted;
 }
 
@@ -1870,6 +1931,7 @@ Mat colorFilterCMY(Mat image, std::vector<float> rgbco){
 
     imshow("Imagem com ajuste CMY", adjusted);
     waitKey();
+    destroyWindow("Imagem com ajuste CMY");
     return adjusted;
 }
 
@@ -1915,6 +1977,7 @@ Mat applyChromaKey(Mat image, float dist, Mat secondImg){
 
         imshow("Imagem com Chroma Key", applied);
         waitKey();
+        destroyWindow("Imagem com Chroma Key");
     }
     return applied;
 }
@@ -1939,6 +2002,7 @@ Mat applySepia(Mat image){
     Mat applied = a.toRGB();
     imshow("Aplicacao do Sepia", applied);
     waitKey();
+    destroyWindow("Aplicacao do Sepia");
     return applied;
 }
 

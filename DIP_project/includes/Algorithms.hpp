@@ -90,8 +90,33 @@ std::pair<double, double> parseGamma(std::string s);
 
 std::pair<std::vector<double>, std::pair<int, int>> parseKernel(std::string s);
 
+std::pair<int, int> parseKernelSize(std::string s);
+
 Mat appKernel(Mat image, std::vector<double> kernel, std::pair<int, int> msize);
 
+Mat appKernelSimpleMean(Mat image, std::pair<int, int> msize);
+
+Mat appKernelWeightedMean(Mat image, std::vector<double> kernel, std::pair<int, int> msize);
+
+Mat appKernelMedian(Mat image, std::pair<int, int> msize);
+
+Mat appKernelSobelMagnitude(Mat image);
+
+Mat appKernelSobelX(Mat image);
+
+Mat appKernelSobelY(Mat image);
+
+Mat appKernelLaplacian(Mat image);
+
+Mat appKernelHighBoost(Mat image,double f);
+
+Mat changeScale(Mat image,double scale);
+
+Mat changeScaleBilinear(Mat image, double scale);
+
+Mat rotate(cv::Mat image, double degrees);
+
+Mat rotateBilinear(cv::Mat image, double degrees);
 //----------------------------------------------------------------------------------------------------------------------
 //ALGORITMOS EM HSV
 

@@ -190,7 +190,30 @@ void MainWindow::TogglePond(int v){
 void MainWindow::ToggleBoost(int v){
     if(v == 0){
         ui->highBoost->hide();
+        ui->boostSlider->hide();
     } else{
         ui->highBoost->show();
+        ui->boostSlider->show();
     }
 }
+
+double MainWindow::retrieveBoost(){
+    return ((double)(ui->boostSlider->sliderPosition()))/100.0;
+}
+
+void MainWindow::ToggleTransform(int v){
+    if(v == 0){
+        ui->transQ->hide();
+        ui->rotCheck->hide();
+        ui->bilinCheck->hide();
+    } else{
+        ui->transQ->show();
+        ui->rotCheck->show();
+        ui->bilinCheck->show();
+    }
+}
+
+double MainWindow::retrieveTransQ(){
+    return ((double)(ui->transQ->sliderPosition()))/100.0;
+}
+
