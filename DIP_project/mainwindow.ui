@@ -309,7 +309,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>Escanografia</string>
+     <string>Esteganografia</string>
     </property>
    </widget>
    <widget class="QSlider" name="brushSize">
@@ -574,7 +574,7 @@
      <number>1</number>
     </property>
     <property name="maximum">
-     <number>500</number>
+     <number>200</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>

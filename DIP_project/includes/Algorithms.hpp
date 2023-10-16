@@ -58,7 +58,11 @@ bool saveImage(const std::string& path, const cv::Mat& image);
 
 int showHistogram(string path);
 
+int showHistogramHSV(string path);
+
 cv::Mat HistogramEqualization(Mat image);
+
+Mat HistogramEqualizationHSV(Mat image);
 
 std::string parseScan(std::string s);
 

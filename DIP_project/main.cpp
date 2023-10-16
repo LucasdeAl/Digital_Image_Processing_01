@@ -25,7 +25,8 @@ Algorithms algoritmo = NONE;
 std::vector<std::pair<float, float>> equacionaRetas(std::vector<QPointF> buffer);
 
 Mat reference = Mat(cv::Size(1,1), 0);
-Mat scanimg = Mat(cv::Size(1,1), 0);
+Mat complexp;
+Mat scanimg = Mat(1, 1, CV_8UC1);
 bool can_draw = false;
 bool gaussianB = false;
 bool adjustRGB = false;
@@ -140,8 +141,12 @@ void MainWindow::on_Set_clicked()
         read = w->getText();
         auto dataScanography = parseScan(read);
         saved = scanographyWrite(einstein, dataScanography);
+        scanimg = saved;
         imgpath = "../images/scan.jpg";
         imgname = "scan.jpg";
+        imshow("Imagem com mensagem escondida", saved);
+        waitKey();
+        destroyWindow("Imagem com mensagem escondida");
         break;
     }
     case KERNEL:{
@@ -167,6 +172,7 @@ void MainWindow::on_Set_clicked()
         merge(planos, 2, complexo);
         dft(complexo, complexo);
         split(complexo, planos);
+        complexp = planos[1];
         magnitude(planos[0], planos[1], planos[0]);
         Mat fourier = planos[0];
         fourier += Scalar::all(1);
@@ -236,11 +242,11 @@ void MainWindow::on_Set_clicked()
     case TRANSFORMS:{
         if(isRot){
             if(isBilin){
-                saved = rotateBilinear(einstein, (w->retrieveTransQ()/5)*360);
+                saved = rotateBilinear(einstein, (w->retrieveTransQ()/2)*360);
                 imgpath = "../images/rotbilin.jpg";
                 imgname = "rotbilin.jpg";
             } else{
-                saved = rotate(einstein, (w->retrieveTransQ()/5)*360);
+                saved = rotate(einstein, (w->retrieveTransQ()/2)*360);
                 imgpath = "../images/rot.jpg";
                 imgname = "rot.jpg";
             }
@@ -320,19 +326,28 @@ void MainWindow::on_Set_clicked()
     }
     case HISTOGRAMA:{
         if(histEq){
-            Mat equalized(HistogramEqualization(einstein));
-            saveImage("../images/equalized.jpg", equalized);
-            showHistogram("../images/equalized.jpg");
-            imgpath = "../images/equalized.jpg";
-            imgname = "equalized.jpg";
+            if(histHSV){
+                Mat equalized(HistogramEqualizationHSV(einstein));
+                saveImage("../images/equalizedHSV.jpg", equalized);
+                showHistogram("../images/equalizedHSV.jpg");
+                showHistogramHSV("../images/equalizedHSV.jpg");
+            } else{
+                Mat equalized(HistogramEqualization(einstein));
+                saveImage("../images/equalized.jpg", equalized);
+                showHistogram("../images/equalized.jpg");
+            }
         }
         else{
-            showHistogram(imgpath);
+            if(histHSV){
+                showHistogramHSV(imgpath);
+            }else{
+                showHistogram(imgpath);
+            }
         }
         break;
     }
     }
-    if(algoritmo != FOURIER){
+    if(algoritmo != FOURIER && algoritmo != HISTOGRAMA){
         saveImage(imgpath, saved);
         w->setPath(imgname);
     }
@@ -352,8 +367,7 @@ void MainWindow::on_Clear_clicked()
         break;
     case ESCANOGRAFIA:{
         if(scanimg.size() != cv::Size(1, 1)){
-            w->clearText();
-            Mat scanimg = imread("../images/scan.jpg", IMREAD_UNCHANGED);
+            w->clearText();            
             std::string aux = std::string("Mensagem Lida: ") + scanographyRead(scanimg);
             const char *c = aux.c_str();
             w->setTextualPlaceholder(c);
@@ -369,7 +383,16 @@ void MainWindow::on_Clear_clicked()
     case FOURIER:
         LimpaLimiarizacao();
         break;
+    case MEDIA:{
+        w->clearText();
+        break;
     }
+    case MEDIANA:{
+        w->clearText();
+        break;
+    }
+    }
+
 }
 
 void MainWindow::on_ShowFourier_clicked()
@@ -393,17 +416,34 @@ void MainWindow::on_ShowFourier_clicked()
     q2.copyTo(q1);
     tmp.copyTo(q2);
 
-    int w = getOptimalDFTSize(fourier.cols);
-    int h = getOptimalDFTSize(fourier.rows);
+    int n = getOptimalDFTSize(fourier.cols);
+    int m = getOptimalDFTSize(fourier.rows);
+
+    Mat temp;
+
+    copyMakeBorder(fourier, temp, 0, m - fourier.rows, 0, n - fourier.cols, BORDER_CONSTANT, Scalar::all(0));
 
     Mat operando;
-    fourier.convertTo(operando, CV_32FC1);
+    temp.convertTo(operando, CV_32FC1);
+
+    Mat planos[] = {operando, complexp};
+    Mat complexo;
+    merge(planos, 2, complexo);
 
     Mat inversa;
-    dft(operando, inversa, DFT_INVERSE|DFT_REAL_OUTPUT);
+    dft(complexo, inversa, DFT_INVERSE);
+    split(inversa, planos);
+    magnitude(planos[0], planos[1], planos[0]);
+    Mat realp = planos[0];
+    realp += Scalar::all(1);
+    log(realp, realp);
+
+    realp = realp(Rect(0, 0, realp.cols & -2, realp.rows & -2));
 
     Mat final;
-    inversa.convertTo(final, CV_8UC1);
+    realp.convertTo(final, CV_8UC1);
+
+    final = gammaC(final, 1.0, 0.5);
 
     imshow("Transformada Inversa", final);
     waitKey();
@@ -795,6 +835,7 @@ void MainWindow::on_radioButton_8_clicked()
     w->ToggleText(SHOW);
     w->setTextualPlaceholder(templateAlg[MEDIA]);
     w->ToggleTransform(HIDE);
+    w->clearText();
     w->ToggleDist(HIDE);
     w->TogglePond(SHOW);
     w->ToggleHist(HIDE);
@@ -814,6 +855,7 @@ void MainWindow::on_radioButton_13_clicked()
     w->ToggleText(SHOW);
     w->setTextualPlaceholder(templateAlg[MEDIANA]);
     w->ToggleDist(HIDE);
+    w->clearText();
     w->TogglePond(HIDE);
     w->ToggleHist(HIDE);
     w->ToggleSobel(HIDE);

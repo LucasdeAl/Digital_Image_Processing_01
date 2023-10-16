@@ -534,7 +534,7 @@ cv::Mat scanographyWrite(Mat image,string p)
 }
 
 
-string scanographyRead(Mat image)
+std::string scanographyRead(Mat image)
 {
     uint8_t* pixelImagePtr;
     pixelImagePtr = (uint8_t*)image.data;
@@ -1832,8 +1832,6 @@ Mat Vnegative(Mat image){
                 else if (a.data[i][j].h >= 2*Pi){
                    a.data[i][j].h -= 2*Pi;
                 }
-
-                    a.data[i][j].s = 1 - a.data[i][j].s;
             }
             a.data[i][j].v = 1 - a.data[i][j].v;
         }
