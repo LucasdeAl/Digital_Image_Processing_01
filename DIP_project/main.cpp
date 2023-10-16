@@ -331,10 +331,12 @@ void MainWindow::on_Set_clicked()
                 saveImage("../images/equalizedHSV.jpg", equalized);
                 showHistogram("../images/equalizedHSV.jpg");
                 showHistogramHSV("../images/equalizedHSV.jpg");
+                w->setPath("equalizedHSV.jpg");
             } else{
                 Mat equalized(HistogramEqualization(einstein));
                 saveImage("../images/equalized.jpg", equalized);
                 showHistogram("../images/equalized.jpg");
+                w->setPath("equalized.jpg");
             }
         }
         else{
@@ -431,11 +433,9 @@ void MainWindow::on_ShowFourier_clicked()
     merge(planos, 2, complexo);
 
     Mat inversa;
-    dft(complexo, inversa, DFT_INVERSE);
-    split(inversa, planos);
-    magnitude(planos[0], planos[1], planos[0]);
-    Mat realp = planos[0];
-    realp += Scalar::all(1);
+    dft(complexo, inversa, DFT_INVERSE|DFT_REAL_OUTPUT);
+
+    Mat realp = inversa + Scalar::all(1);
     log(realp, realp);
 
     realp = realp(Rect(0, 0, realp.cols & -2, realp.rows & -2));
