@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     // Read the image file as
     // imread("default.jpg");
-    Mat image = imread("../images/maquina.PNG",IMREAD_UNCHANGED);
+    Mat image = imread("../images/indio.webp",IMREAD_UNCHANGED);
   
     // Error Handling
     if (image.empty()) {
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     }
     //rotateBilinear(image,60);
     //changeScaleBilinear(image,2);
-    showHistogramHSV("../images/letras.tif");
+    //showHistogramHSV("../images/letras.tif");
     //appKernelSobelMagnitude(image);
     // Show Image inside a window with
     // the name provided
@@ -37,9 +37,9 @@ int main(int argc, char** argv)
     //string p = scanographyRead(textImage);
     //cout << p <<endl;
     //imshow("Window Name", image);
-    //showHistogram("../images/frutas.png");
-    //Mat equalized = HistogramEqualization(image);
-    //imshow("Window Name", equalized);
+    //showHistogramHSV("../images/frutas.png");
+    Mat equalized = HistogramEqualizationHSV(image);
+    imshow("Window Name", equalized);
     //saveImage("../images/indioEqualized.webp",equalized);
     //showHistogram("../images/indioEqualized.webp");
     // Wait for any keystroke

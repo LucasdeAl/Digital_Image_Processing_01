@@ -205,7 +205,7 @@ int showHistogram(string path)
     vector<Mat> bgr_planes;
     split( src, bgr_planes );
     int histSize = 256;
-    float range[] = { 0, 256 }; //the upper boundary is exclusive
+    float range[] = { 0, 256 }; 
     const float* histRange[] = { range };
     bool uniform = true, accumulate = false;
     Mat b_hist, g_hist, r_hist;
@@ -264,14 +264,10 @@ int showHistogramHSV(string path)
     const float* histRange[] = { range };
     bool uniform = true, accumulate = false;
     Mat v_hist;
-    float max =0;
-    for(float value: vValues)
-    {
-        if(value>max) max = value;
-    }
+    
     std::vector<uint8_t> vValuesUint8;
     for (size_t i = 0; i < vValues.size(); i++) {
-        uint8_t normalizedValue = static_cast<uint8_t>((vValues[i] / max) * 255.0);
+        uint8_t normalizedValue = static_cast<uint8_t>((vValues[i]) * 255.0);
         vValuesUint8.push_back(normalizedValue);
     }
 
@@ -370,6 +366,91 @@ Mat HistogramEqualization(Mat image)
         }
     }    
     return newImage;
+}
+
+
+Mat HistogramEqualizationHSV(Mat image)
+{
+
+
+    MatHsv imageHSV(image);
+    MatHsv newImageHSV(image);
+    std::vector<std::vector<HSVcell>> hsvData = imageHSV.data;
+    std::vector<float> vValues;
+
+    for (int i = 0; i < hsvData.size(); i++)
+    {
+        for (int j = 0; j < hsvData[i].size(); j++)
+        {
+            vValues.push_back(hsvData[i][j].v);
+        }
+    }
+    float max =0;
+    for(float value: vValues)
+    {
+        if(value>max) max = value;
+    }
+    std::vector<uint8_t> vValuesUint8;
+    for (size_t i = 0; i < vValues.size(); i++) {
+        uint8_t normalizedValue = static_cast<uint8_t>((vValues[i] / max) * 255.0);
+        vValuesUint8.push_back(normalizedValue);//it has the vector off all intensities of each pixel of image
+    }
+    
+    int cn = image.channels();
+    double histogram[256],equalizedHistogram[256];
+    double probability[256];
+    double dimensions = (double)(image.rows*image.cols);
+    double aux;
+    // initiation of histogram
+      
+    for(int i = 0; i < 256; i++)
+    {  
+        histogram[i] = 0;
+    }
+    
+    // creating histograms 
+     for(uint8_t value: vValuesUint8)
+    {
+        histogram[value]++;
+    }
+    // calculating probabilities
+      
+        for(int i = 0; i < 256; i++)
+        {  
+            probability[i] = histogram[i]/dimensions;
+        }
+    
+
+    // calculating cumulative probabilities 
+     
+        aux = 0; 
+        for(int i = 0; i < 256; i++)
+        {
+            probability[i] += aux;
+            aux = probability[i];
+        }
+    
+    //round cumulative probabilities multiplied by image max intensity 
+        for(int i = 0; i < 256; i++)
+        {
+            int value = ceil(probability[i]*255);
+            equalizedHistogram[i] = value>255?255:value;
+            //cout << equalizedHistogram[i]<<" ";         
+        }
+  
+    
+    // generating new image
+  
+        for(int i = 0; i < image.rows; i++)
+        {
+            for(int j = 0; j < image.cols; j++)
+            {
+                newImageHSV.data[i][j].v = ((equalizedHistogram[(int)((imageHSV.data[i][j].v)*255)])/255.0);
+            }
+        }
+        Mat result(newImageHSV.toRGB()); 
+
+    return result;
 }
 
 
