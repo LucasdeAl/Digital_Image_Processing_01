@@ -5,13 +5,13 @@ Work we did for the Digital Image Processing subject in Federal University of Fo
 Warning: Fourier is not working, and scale operations can be very slow due to linear algebra operations.
 
 ## Things we did:
-Negative (HSV/RGB)
-Limiarization
-Histogram Equalization (HSV/RGB)
-Scanography
-General filters (Logarithm, Gamma, Kernel application, Kernel with mean, Kernel with weighted mean, Kernel with median, Sobel (X, Y, Magnitude), Laplacian, High boost)
-Change scale and rotate (both Bilinear (SLOW!) and Nearest)
-Grayscale
-Color filter (HSV, RGB and CMY)
-Chroma Key
-Sepia
+Negative (HSV/RGB);
+Limiarization;
+Histogram Equalization (HSV/RGB);
+Scanography;
+General filters (Logarithm, Gamma, Kernel application, Kernel with mean, Kernel with weighted mean, Kernel with median, Sobel (X, Y, Magnitude), Laplacian, High boost);
+Change scale and rotate (both Bilinear (SLOW!) and Nearest);
+Grayscale;
+Color filter (HSV, RGB and CMY);
+Chroma Key;
+Sepia;
